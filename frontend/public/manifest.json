@@ -1,0 +1,37 @@
+{
+  "name": "Food Village POS",
+  "short_name": "Food Village",
+  "description": "Multi-vendor food court ordering system",
+  "start_url": "/order",
+  "display": "standalone",
+  "background_color": "#0d0d0d",
+  "theme_color": "#ff5c00",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["food", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Order Food",
+      "url": "/order",
+      "description": "Start a new order"
+    },
+    {
+      "name": "Display Board",
+      "url": "/display",
+      "description": "TV display board"
+    }
+  ]
+}

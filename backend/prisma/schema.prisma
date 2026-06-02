@@ -1,0 +1,396 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  super_admin
+  admin
+  vendor_owner
+  vendor_kitchen
+  vendor_cashier
+  waiter
+}
+
+enum VendorStatus {
+  online
+  offline
+  suspended
+}
+
+enum OrderStatus {
+  pending
+  confirmed
+  partially_ready
+  ready
+  completed
+  cancelled
+}
+
+enum OrderItemStatus {
+  pending
+  accepted
+  preparing
+  ready
+  completed
+  rejected
+}
+
+enum SessionStatus {
+  active
+  closed
+}
+
+// ─── Core Tables ──────────────────────────────────────────────────────────────
+
+model FoodVillage {
+  id         String   @id @default(uuid())
+  name       String
+  tagline    String?
+  logo_url   String?
+  address    String?
+  tax_rate   Float    @default(0.0825)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("food_village")
+}
+
+model Vendor {
+  id                  String       @id @default(uuid())
+  name                String
+  slug                String       @unique
+  cuisine_type        String
+  booth_number        Int          @unique
+  booth_color         String       @default("#FF6B35")
+  logo_url            String?
+  avg_prep_time_minutes Int        @default(10)
+  status              VendorStatus @default(online)
+  is_accepting_orders Boolean      @default(true)
+  operating_hours     Json?
+  notification_prefs  Json?
+  created_at          DateTime     @default(now())
+  updated_at          DateTime     @updatedAt
+
+  users           User[]
+  categories      MenuCategory[]
+  menu_items      MenuItem[]
+  modifier_groups ModifierGroup[]
+  order_items     OrderItem[]
+  staff_pins      StaffPin[]
+  promotions      Promotion[]
+
+  @@map("vendors")
+}
+
+model User {
+  id          String   @id @default(uuid())
+  supabase_id String   @unique
+  email       String   @unique
+  full_name   String
+  role        UserRole
+  vendor_id   String?
+  is_active   Boolean  @default(true)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  vendor         Vendor?              @relation(fields: [vendor_id], references: [id])
+  sessions       Session[]
+  status_history OrderStatusHistory[]
+
+  @@map("users")
+}
+
+model StaffPin {
+  id         String   @id @default(uuid())
+  vendor_id  String
+  user_id    String?
+  pin_hash   String
+  label      String
+  role       UserRole @default(vendor_kitchen)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+
+  vendor Vendor @relation(fields: [vendor_id], references: [id])
+
+  @@map("staff_pins")
+}
+
+model Table {
+  id           String   @id @default(uuid())
+  table_number Int      @unique
+  label        String
+  qr_code_url  String?
+  is_active    Boolean  @default(true)
+  created_at   DateTime @default(now())
+
+  sessions Session[]
+  orders   Order[]
+
+  @@map("tables")
+}
+
+model Session {
+  id         String        @id @default(uuid())
+  table_id   String
+  waiter_id  String?
+  status     SessionStatus @default(active)
+  expires_at DateTime
+  created_at DateTime      @default(now())
+  updated_at DateTime      @updatedAt
+
+  table  Table   @relation(fields: [table_id], references: [id])
+  waiter User?   @relation(fields: [waiter_id], references: [id])
+  orders Order[]
+
+  @@map("sessions")
+}
+
+// ─── Menu Tables ──────────────────────────────────────────────────────────────
+
+model MenuCategory {
+  id         String   @id @default(uuid())
+  vendor_id  String
+  name       String
+  slug       String
+  sort_order Int      @default(0)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  vendor Vendor     @relation(fields: [vendor_id], references: [id])
+  items  MenuItem[]
+
+  @@unique([vendor_id, slug])
+  @@map("menu_categories")
+}
+
+model MenuItem {
+  id                String   @id @default(uuid())
+  vendor_id         String
+  category_id       String
+  name              String
+  description       String?
+  price             Float
+  image_url         String?
+  thumbnail_url     String?
+  prep_time_minutes Int      @default(10)
+  dietary_tags      String[]
+  allergens         String[]
+  is_available      Boolean  @default(true)
+  is_deleted        Boolean  @default(false)
+  sort_order        Int      @default(0)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  vendor   Vendor       @relation(fields: [vendor_id], references: [id])
+  category MenuCategory @relation(fields: [category_id], references: [id])
+
+  modifier_group_links MenuItemModifierGroup[]
+  order_items          OrderItem[]
+
+  @@map("menu_items")
+}
+
+model ModifierGroup {
+  id             String   @id @default(uuid())
+  vendor_id      String
+  name           String
+  is_required    Boolean  @default(false)
+  min_selections Int      @default(0)
+  max_selections Int      @default(1)
+  is_active      Boolean  @default(true)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  vendor     Vendor                  @relation(fields: [vendor_id], references: [id])
+  modifiers  Modifier[]
+  item_links MenuItemModifierGroup[]
+
+  @@map("modifier_groups")
+}
+
+model Modifier {
+  id                String   @id @default(uuid())
+  modifier_group_id String
+  name              String
+  price_adjustment  Float    @default(0)
+  is_available      Boolean  @default(true)
+  sort_order        Int      @default(0)
+  created_at        DateTime @default(now())
+
+  group           ModifierGroup       @relation(fields: [modifier_group_id], references: [id])
+  order_item_mods OrderItemModifier[]
+
+  @@map("modifiers")
+}
+
+model MenuItemModifierGroup {
+  menu_item_id      String
+  modifier_group_id String
+
+  menu_item      MenuItem      @relation(fields: [menu_item_id], references: [id])
+  modifier_group ModifierGroup @relation(fields: [modifier_group_id], references: [id])
+
+  @@id([menu_item_id, modifier_group_id])
+  @@map("menu_item_modifier_groups")
+}
+
+// ─── Order Tables ─────────────────────────────────────────────────────────────
+
+model Order {
+  id              String      @id @default(uuid())
+  token_number    Int
+  token_date      String
+  table_id        String
+  session_id      String?
+  waiter_id       String?
+  status          OrderStatus @default(pending)
+  payment_method  String      @default("cash")
+  payment_status  String      @default("unpaid")
+  subtotal        Float
+  tax_amount      Float
+  total           Float
+  idempotency_key String      @unique
+  created_at      DateTime    @default(now())
+  updated_at      DateTime    @updatedAt
+
+  table      Table    @relation(fields: [table_id], references: [id])
+  session    Session? @relation(fields: [session_id], references: [id])
+  items      OrderItem[]
+  history    OrderStatusHistory[]
+  promotions OrderPromotion[]
+  cash_logs  CashLog[]
+
+  @@unique([token_number, token_date])
+  @@map("orders")
+}
+
+model OrderItem {
+  id                   String          @id @default(uuid())
+  order_id             String
+  vendor_id            String
+  menu_item_id         String
+  item_name            String
+  quantity             Int
+  unit_price           Float
+  modifier_price       Float           @default(0)
+  total_price          Float
+  special_instructions String?
+  status               OrderItemStatus @default(pending)
+  estimated_prep_time  Int             @default(10)
+  accepted_at          DateTime?
+  preparing_at         DateTime?
+  ready_at             DateTime?
+  completed_at         DateTime?
+  rejected_at          DateTime?
+  reject_reason        String?
+  created_at           DateTime        @default(now())
+  updated_at           DateTime        @updatedAt
+
+  order     Order     @relation(fields: [order_id], references: [id])
+  vendor    Vendor    @relation(fields: [vendor_id], references: [id])
+  menu_item MenuItem  @relation(fields: [menu_item_id], references: [id])
+  modifiers OrderItemModifier[]
+
+  @@map("order_items")
+}
+
+model OrderItemModifier {
+  id             String @id @default(uuid())
+  order_item_id  String
+  modifier_id    String
+  modifier_name  String
+  price_at_order Float
+  quantity       Int    @default(1)
+
+  order_item OrderItem @relation(fields: [order_item_id], references: [id])
+  modifier   Modifier  @relation(fields: [modifier_id], references: [id])
+
+  @@map("order_item_modifiers")
+}
+
+model OrderStatusHistory {
+  id          String       @id @default(uuid())
+  order_id    String
+  actor_id    String?
+  from_status OrderStatus?
+  to_status   OrderStatus
+  reason      String?
+  created_at  DateTime     @default(now())
+
+  order Order @relation(fields: [order_id], references: [id])
+  actor User? @relation(fields: [actor_id], references: [id])
+
+  @@map("order_status_history")
+}
+
+// ─── Phase 3 Tables ───────────────────────────────────────────────────────────
+
+model Promotion {
+  id               String   @id @default(uuid())
+  code             String   @unique
+  type             String   // 'percent' | 'fixed'
+  value            Float
+  min_order_amount Float?
+  max_uses         Int?
+  current_uses     Int      @default(0)
+  vendor_id        String?
+  valid_from       DateTime
+  valid_to         DateTime
+  is_active        Boolean  @default(true)
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  vendor Vendor?          @relation(fields: [vendor_id], references: [id])
+  orders OrderPromotion[]
+
+  @@map("promotions")
+}
+
+model OrderPromotion {
+  id              String   @id @default(uuid())
+  order_id        String
+  promotion_id    String
+  discount_amount Float
+  created_at      DateTime @default(now())
+
+  order     Order     @relation(fields: [order_id], references: [id])
+  promotion Promotion @relation(fields: [promotion_id], references: [id])
+
+  @@map("order_promotions")
+}
+
+model CashLog {
+  id           String   @id @default(uuid())
+  order_id     String
+  amount       Float
+  collected_by String
+  notes        String?
+  created_at   DateTime @default(now())
+
+  order Order @relation(fields: [order_id], references: [id])
+
+  @@map("cash_logs")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  actor_id    String?
+  actor_name  String
+  actor_role  String
+  action      String
+  entity_type String
+  entity_id   String?
+  metadata    Json     @default("{}")
+  created_at  DateTime @default(now())
+
+  @@map("audit_logs")
+}

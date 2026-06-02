@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mobile Auto Repair — 3-Month Launch Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0d0d0d;
+    --grease: #1a1a1a;
+    --steel: #2c2c2c;
+    --chrome: #c8c8c8;
+    --orange: #ff5c00;
+    --yellow: #ffd000;
+    --white: #f5f5f0;
+    --dim: #888;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  header {
+    background: var(--grease);
+    border-bottom: 3px solid var(--orange);
+    padding: 40px 48px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 280px; height: 280px;
+    border: 40px solid var(--steel);
+    border-radius: 50%;
+    opacity: 0.4;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; right: 80px;
+    width: 180px; height: 180px;
+    border: 30px solid var(--steel);
+    border-radius: 50%;
+    opacity: 0.25;
+  }
+  .header-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--orange);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 8vw, 80px);
+    line-height: 0.95;
+    letter-spacing: 2px;
+    color: var(--white);
+  }
+  h1 span { color: var(--orange); }
+  .header-sub {
+    margin-top: 14px;
+    font-size: 14px;
+    color: var(--dim);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 1px;
+  }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--steel);
+    overflow-x: auto;
+  }
+  .stat {
+    flex: 1;
+    min-width: 140px;
+    padding: 20px 28px;
+    border-right: 1px solid var(--steel);
+    position: relative;
+  }
+  .stat:last-child { border-right: none; }
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    color: var(--yellow);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--dim);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* MAIN LAYOUT */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* SECTION HEADERS */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 48px 0 24px;
+  }
+  .section-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    color: var(--orange);
+    background: rgba(255,92,0,0.1);
+    border: 1px solid rgba(255,92,0,0.3);
+    padding: 4px 10px;
+    letter-spacing: 2px;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--white);
+  }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--steel);
+  }
+
+  /* MONTH CARDS */
+  .months-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2px; }
+
+  .month-card {
+    background: var(--grease);
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.2s;
+  }
+  .month-card:hover { background: var(--steel); }
+  .month-card::before {
+    content: attr(data-month);
+    position: absolute;
+    top: -10px; right: 16px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 90px;
+    color: rgba(255,255,255,0.03);
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .month-badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--black);
+    padding: 4px 10px;
+    margin-bottom: 14px;
+  }
+  .m1 .month-badge { background: #c8c8c8; }
+  .m2 .month-badge { background: var(--yellow); }
+  .m3 .month-badge { background: var(--orange); }
+
+  .month-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+    color: var(--white);
+  }
+
+  .task-list { list-style: none; }
+  .task-list li {
+    padding: 6px 0;
+    font-size: 13.5px;
+    color: var(--chrome);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .task-list li:last-child { border-bottom: none; }
+  .task-list li::before {
+    content: '▸';
+    color: var(--orange);
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-size: 11px;
+  }
+
+  .month-footer {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--steel);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .month-cost-label { font-size: 11px; color: var(--dim); font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 1px; }
+  .month-cost-val { font-family: 'Bebas Neue', sans-serif; font-size: 22px; color: var(--yellow); }
+
+  /* TOOLS TABLE */
+  .tools-section { margin-top: 8px; }
+
+  .tools-category {
+    margin-bottom: 6px;
+    background: var(--grease);
+    overflow: hidden;
+  }
+  .tools-category-header {
+    padding: 14px 20px;
+    background: var(--steel);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+  }
+  .tools-category-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 17px;
+    letter-spacing: 2px;
+    color: var(--white);
+  }
+  .tools-category-total {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--yellow);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    padding: 10px 20px;
+    text-align: left;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--dim);
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid var(--steel);
+  }
+  thead th:last-child { text-align: right; }
+  tbody tr { border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.15s; }
+  tbody tr:hover { background: rgba(255,255,255,0.03); }
+  tbody td { padding: 10px 20px; color: var(--chrome); vertical-align: top; }
+  tbody td:last-child { text-align: right; font-family: 'DM Mono', monospace; color: var(--white); white-space: nowrap; }
+  .priority-tag {
+    display: inline-block;
+    font-size: 9px;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    margin-left: 6px;
+    border-radius: 2px;
+    vertical-align: middle;
+  }
+  .p-must { background: rgba(255,92,0,0.15); color: var(--orange); border: 1px solid rgba(255,92,0,0.3); }
+  .p-nice { background: rgba(255,208,0,0.1); color: var(--yellow); border: 1px solid rgba(255,208,0,0.3); }
+
+  /* REVENUE PROJECTION */
+  .revenue-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 2px; margin-top: 4px; }
+  .rev-card {
+    background: var(--grease);
+    padding: 24px 28px;
+    border-left: 3px solid transparent;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .rev-card:hover { background: var(--steel); }
+  .rev-card.m1 { border-left-color: var(--chrome); }
+  .rev-card.m2 { border-left-color: var(--yellow); }
+  .rev-card.m3 { border-left-color: var(--orange); }
+  .rev-month { font-size: 11px; color: var(--dim); font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+  .rev-range { font-family: 'Bebas Neue', sans-serif; font-size: 34px; color: var(--white); line-height: 1; }
+  .rev-note { font-size: 12px; color: var(--dim); margin-top: 6px; }
+
+  /* TOTAL BAR */
+  .total-bar {
+    background: var(--orange);
+    padding: 20px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2px;
+  }
+  .total-bar-label { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 3px; color: var(--black); }
+  .total-bar-val { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--black); }
+
+  /* TIPS */
+  .tips-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 2px; margin-top: 4px; }
+  .tip-card {
+    background: var(--grease);
+    padding: 20px 24px;
+    border-top: 2px solid var(--steel);
+    transition: border-color 0.2s;
+  }
+  .tip-card:hover { border-top-color: var(--orange); }
+  .tip-icon { font-size: 22px; margin-bottom: 8px; }
+  .tip-title { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 1px; color: var(--white); margin-bottom: 6px; }
+  .tip-text { font-size: 12.5px; color: var(--dim); line-height: 1.5; }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    header { padding: 28px 20px 24px; }
+    .container { padding: 0 12px 60px; }
+    .stat { padding: 14px 16px; min-width: 110px; }
+    .month-card { padding: 20px 16px; }
+    tbody td { padding: 8px 12px; }
+    thead th { padding: 8px 12px; }
+    .tools-category-header { padding: 12px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-tag">Business Launch Blueprint</div>
+  <h1>Mobile Auto<br><span>Repair</span></h1>
+  <div class="header-sub">3-Month Launch Plan · Tool Budget · Revenue Targets</div>
+</header>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num">$38K</div><div class="stat-label">Startup Cost</div></div>
+  <div class="stat"><div class="stat-num">90</div><div class="stat-label">Days to Launch</div></div>
+  <div class="stat"><div class="stat-num">$7K+</div><div class="stat-label">Month 3 Revenue</div></div>
+  <div class="stat"><div class="stat-num">~8mo</div><div class="stat-label">Break-Even</div></div>
+  <div class="stat"><div class="stat-num">$80K+</div><div class="stat-label">Year 1 Potential</div></div>
+</div>
+
+<div class="container">
+
+  <!-- MONTH PLAN -->
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <span class="section-title">Monthly Action Plan</span>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="months-grid">
+    <div class="month-card m1" data-month="01">
+      <div class="month-badge">Month 1</div>
+      <div class="month-title">Setup & Licensing</div>
+      <ul class="task-list">
+        <li>Register LLC or sole proprietorship</li>
+        <li>Get business license &amp; EIN</li>
+        <li>Open business checking account</li>
+        <li>Get commercial auto + liability insurance ($150–200/mo)</li>
+        <li>Purchase or lease service van (cargo van, 2018+ preferred)</li>
+        <li>Order essential tools (see tools list)</li>
+        <li>Set up van shelving &amp; organization</li>
+        <li>Create Google Business Profile</li>
+        <li>Build basic website with booking form</li>
+        <li>Price &amp; service menu finalized</li>
+        <li>Join local Facebook &amp; Nextdoor groups</li>
+      </ul>
+      <div class="month-footer">
+        <div><div class="month-cost-label">Spend</div><div class="month-cost-val">$28,000–35,000</div></div>
+        <div><div class="month-cost-label">Revenue</div><div class="month-cost-val">$0–500</div></div>
+      </div>
+    </div>
+
+    <div class="month-card m2" data-month="02">
+      <div class="month-badge">Month 2</div>
+      <div class="month-title">First Customers</div>
+      <ul class="task-list">
+        <li>Offer 3–5 free or discounted jobs to get reviews</li>
+        <li>Push Google review requests after every job</li>
+        <li>Door-knock or cold-call local small fleets (landscapers, plumbers, delivery)</li>
+        <li>Post before/after photos on Facebook &amp; Instagram</li>
+        <li>Set up Square or Stripe for card payments</li>
+        <li>Create referral incentive ($20 credit per referral)</li>
+        <li>Partner with a used car dealer for pre-purchase inspections</li>
+        <li>Add remaining tools from "nice to have" list</li>
+        <li>Track every job: time, parts cost, total charged</li>
+      </ul>
+      <div class="month-footer">
+        <div><div class="month-cost-label">Spend</div><div class="month-cost-val">$1,500–2,500</div></div>
+        <div><div class="month-cost-label">Revenue</div><div class="month-cost-val">$2,000–4,000</div></div>
+      </div>
+    </div>
+
+    <div class="month-card m3" data-month="03">
+      <div class="month-badge">Month 3</div>
+      <div class="month-title">Scale &amp; Optimize</div>
+      <ul class="task-list">
+        <li>Aim for 3–5 jobs/day consistently</li>
+        <li>Land at least 1 fleet account (recurring revenue)</li>
+        <li>Run $150–300 Google Local Services ad campaign</li>
+        <li>Add Yelp &amp; Angi listings</li>
+        <li>Introduce service packages (e.g. "Fleet Maintenance Plan")</li>
+        <li>Review pricing — raise rates if booked out 3+ days</li>
+        <li>Automate appointment reminders via text (e.g. Jobber)</li>
+        <li>Start tracking monthly P&amp;L — know your numbers</li>
+        <li>Evaluate if a second tech is needed</li>
+      </ul>
+      <div class="month-footer">
+        <div><div class="month-cost-label">Spend</div><div class="month-cost-val">$1,800–2,800</div></div>
+        <div><div class="month-cost-label">Revenue</div><div class="month-cost-val">$6,000–10,000</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOOLS LIST -->
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <span class="section-title">Tools &amp; Equipment</span>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="tools-section">
+
+    <!-- VEHICLE -->
+    <div class="tools-category">
+      <div class="tools-category-header">
+        <span class="tools-category-name">🚐 Vehicle</span>
+        <span class="tools-category-total">$8,000 – $22,000</span>
+      </div>
+      <table>
+        <thead><tr><th>Item</th><th>Notes</th><th>Est. Cost</th></tr></thead>
+        <tbody>
+          <tr><td>Cargo Van (Ford Transit, Ram ProMaster, or Mercedes Sprinter) <span class="priority-tag p-must">must</span></td><td>Used 2018–2022 recommended</td><td>$8,000–18,000</td></tr>
+          <tr><td>Van Shelving System <span class="priority-tag p-must">must</span></td><td>Adrian Steel, Sortimo, or DIY</td><td>$400–1,200</td></tr>
+          <tr><td>Drawer / Parts Storage <span class="priority-tag p-must">must</span></td><td>Metal bins, stackable trays</td><td>$150–400</td></tr>
+          <tr><td>Work Light / LED Bar <span class="priority-tag p-must">must</span></td><td>Magnetic base is ideal</td><td>$40–120</td></tr>
+          <tr><td>Power Inverter (1500W+) <span class="priority-tag p-must">must</span></td><td>Run power tools from van battery</td><td>$80–200</td></tr>
+          <tr><td>Van Wrap / Signage <span class="priority-tag p-nice">nice</span></td><td>Huge marketing asset</td><td>$600–2,000</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- DIAGNOSTICS -->
+    <div class="tools-category">
+      <div class="tools-category-header">
+        <span class="tools-category-name">🔌 Diagnostics</span>
+        <span class="tools-category-total">$350 – $1,800</span>
+      </div>
+      <table>
+        <thead><tr><th>Item</th><th>Notes</th><th>Est. Cost</th></tr></thead>
+        <tbody>
+          <tr><td>OBD2 Scanner (pro-grade) <span class="priority-tag p-must">must</span></td><td>Launch X431 Pro or Autel MaxiSys</td><td>$200–600</td></tr>
+          <tr><td>Battery Tester / Alternator Tester <span class="priority-tag p-must">must</span></td><td>Midtronics MDX-600 series</td><td>$80–180</td></tr>
+          <tr><td>Multimeter <span class="priority-tag p-must">must</span></td><td>Fluke 115 or equivalent</td><td>$80–150</td></tr>
+          <tr><td>Thermal Imaging Camera <span class="priority-tag p-nice">nice</span></td><td>FLIR One for electrical &amp; cooling issues</td><td>$150–500</td></tr>
+          <tr><td>Cylinder Compression Tester <span class="priority-tag p-nice">nice</span></td><td>For pre-purchase inspections</td><td>$40–120</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- HAND TOOLS -->
+    <div class="tools-category">
+      <div class="tools-category-header">
+        <span class="tools-category-name">🔧 Hand Tools</span>
+        <span class="tools-category-total">$800 – $2,500</span>
+      </div>
+      <table>
+        <thead><tr><th>Item</th><th>Notes</th><th>Est. Cost</th></tr></thead>
+        <tbody>
+          <tr><td>Metric + SAE Socket Set (1/4", 3/8", 1/2") <span class="priority-tag p-must">must</span></td><td>Gearwrench, Tekton, or Snap-on</td><td>$150–400</td></tr>
+          <tr><td>Combination Wrench Set (8–19mm) <span class="priority-tag p-must">must</span></td><td>Full metric &amp; SAE</td><td>$60–180</td></tr>
+          <tr><td>Screwdriver Set <span class="priority-tag p-must">must</span></td><td>Flathead, Phillips, Torx</td><td>$30–80</td></tr>
+          <tr><td>Pliers Set (regular, needle-nose, channel-lock) <span class="priority-tag p-must">must</span></td><td>—</td><td>$40–100</td></tr>
+          <tr><td>Torque Wrench (20–150 ft-lb) <span class="priority-tag p-must">must</span></td><td>Click-type preferred</td><td>$50–120</td></tr>
+          <tr><td>Pry Bar Set <span class="priority-tag p-must">must</span></td><td>—</td><td>$25–60</td></tr>
+          <tr><td>Brake Line Wrench Set <span class="priority-tag p-must">must</span></td><td>Flare nut wrenches</td><td>$30–70</td></tr>
+          <tr><td>Trim Removal / Pry Tool Kit <span class="priority-tag p-nice">nice</span></td><td>Plastic-safe for interior work</td><td>$20–40</td></tr>
+          <tr><td>Breaker Bar (1/2" drive) <span class="priority-tag p-nice">nice</span></td><td>Lug nuts &amp; stubborn bolts</td><td>$30–60</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- POWER TOOLS -->
+    <div class="tools-category">
+      <div class="tools-category-header">
+        <span class="tools-category-name">⚡ Power Tools</span>
+        <span class="tools-category-total">$400 – $1,200</span>
+      </div>
+      <table>
+        <thead><tr><th>Item</th><th>Notes</th><th>Est. Cost</th></tr></thead>
+        <tbody>
+          <tr><td>Impact Wrench (1/2" cordless) <span class="priority-tag p-must">must</span></td><td>Milwaukee M18 or Dewalt 20V</td><td>$150–280</td></tr>
+          <tr><td>Cordless Drill / Driver <span class="priority-tag p-must">must</span></td><td>Same battery platform as impact</td><td>$80–150</td></tr>
+          <tr><td>Angle Grinder <span class="priority-tag p-nice">nice</span></td><td>Rusted bolts, exhaust work</td><td>$50–100</td></tr>
+          <tr><td>Reciprocating Saw <span class="priority-tag p-nice">nice</span></td><td>Exhaust, frozen parts</td><td>$80–150</td></tr>
+          <tr><td>Air Compressor (portable) <span class="priority-tag p-must">must</span></td><td>California Air or Makita 1-gal. small form</td><td>$80–200</td></tr>
+          <tr><td>Tire Inflator (cordless) <span class="priority-tag p-must">must</span></td><td>Ryobi or Makita</td><td>$40–80</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- BRAKES & SUSPENSION -->
+    <div class="tools-category">
+      <div class="tools-category-header">
+        <span class="tools-category-name">🛑 Brakes &amp; Suspension</span>
+        <span class="tools-category-total">$350 – $900</span>
+      </div>
+      <table>
+        <thead><tr><th>Item</th><th>Notes</th><th>Est. Cost</th></tr></thead>
+        <tbody>
+          <tr><td>Brake Caliper Wind-Back Tool Kit <span class="priority-tag p-must">must</span></td><td>Covers most domestic + import</td><td>$30–80</td></tr>
+          <tr><td>Brake Bleeder Kit (vacuum pump) <span class="priority-tag p-must">must</span></td><td>Mityvac or similar</td><td>$30–60</td></tr>
+          <tr><td>Rotor / Hub Puller Set <span class="priority-tag p-nice">nice</span></td><td>—</td><td>$50–120</td></tr>
+          <tr><td>Ball Joint Press / Separator <span class="priority-tag p-nice">nice</span></td><td>C-clamp style or hydraulic</td><td>$30–100</td></tr>
+          <tr><td>Spring Compressor Set <span class="priority-tag p-nice">nice</span></td><td>For strut replacement</td><td>$40–100</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- LIFTING & SAFETY -->
+    <div class="tools-category">
+      <div class="tools-category-header">
+        <span class="tools-category-name">🏋️ Lifting &amp; Safety</span>
+        <span class="tools-category-total">$350 – $900</span>
+      </div>
+      <table>
+        <thead><tr><th>Item</th><th>Notes</th><th>Est. Cost</th></tr></thead>
+        <tbody>
+          <tr><td>Floor Jack (3-ton aluminum) <span class="priority-tag p-must">must</span></td><td>Torin or Arcan — low-profile preferred</td><td>$80–200</td></tr>
+          <tr><td>Jack Stands (set of 4, 3-ton) <span class="priority-tag p-must">must</span></td><td>Never use a jack alone</td><td>$50–100</td></tr>
+          <tr><td>Wheel Chocks (set of 4) <span class="priority-tag p-must">must</span></td><td>—</td><td>$20–40</td></tr>
+          <tr><td>Creeper / Rolling Seat <span class="priority-tag p-must">must</span></td><td>Low-profile for driveway use</td><td>$40–100</td></tr>
+          <tr><td>Nitrile Gloves (box of 100) <span class="priority-tag p-must">must</span></td><td>Reorder monthly</td><td>$15–25/box</td></tr>
+          <tr><td>Safety Glasses, Knee Pads <span class="priority-tag p-must">must</span></td><td>—</td><td>$30–60</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- FLUIDS & CONSUMABLES -->
+    <div class="tools-category">
+      <div class="tools-category-header">
+        <span class="tools-category-name">🛢️ Fluids &amp; Consumables Stock</span>
+        <span class="tools-category-total">$400 – $800</span>
+      </div>
+      <table>
+        <thead><tr><th>Item</th><th>Notes</th><th>Est. Cost</th></tr></thead>
+        <tbody>
+          <tr><td>Engine Oil (assorted grades) <span class="priority-tag p-must">must</span></td><td>5W-20, 5W-30, 0W-20 jugs</td><td>$80–150</td></tr>
+          <tr><td>Oil Drain Pan + Pump <span class="priority-tag p-must">must</span></td><td>—</td><td>$30–60</td></tr>
+          <tr><td>Brake Fluid, Coolant, ATF, Power Steering Fluid <span class="priority-tag p-must">must</span></td><td>Assorted quarts</td><td>$60–120</td></tr>
+          <tr><td>Assorted Fuses, Bulbs, Zip Ties, Electrical Tape <span class="priority-tag p-must">must</span></td><td>Bread &amp; butter on every job</td><td>$40–80</td></tr>
+          <tr><td>Penetrating Oil (PB Blaster), Anti-seize, Dielectric Grease <span class="priority-tag p-must">must</span></td><td>—</td><td>$40–80</td></tr>
+          <tr><td>Shop Towels / Rags (bulk) <span class="priority-tag p-must">must</span></td><td>—</td><td>$20–40</td></tr>
+          <tr><td>Parts Washer / Brush <span class="priority-tag p-nice">nice</span></td><td>—</td><td>$30–80</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- BUSINESS TOOLS -->
+    <div class="tools-category">
+      <div class="tools-category-header">
+        <span class="tools-category-name">💼 Business &amp; Tech</span>
+        <span class="tools-category-total">$300 – $700 / year</span>
+      </div>
+      <table>
+        <thead><tr><th>Item</th><th>Notes</th><th>Est. Cost</th></tr></thead>
+        <tbody>
+          <tr><td>Field Service Software (Jobber or Housecall Pro) <span class="priority-tag p-must">must</span></td><td>Invoicing, scheduling, payments</td><td>$49–149/mo</td></tr>
+          <tr><td>Parts Sourcing App (PartsTech or Nexpart) <span class="priority-tag p-must">must</span></td><td>Real-time pricing &amp; ordering</td><td>Free–$50/mo</td></tr>
+          <tr><td>Tablet (iPad or Android) <span class="priority-tag p-must">must</span></td><td>Invoicing, repair manuals in the van</td><td>$150–400</td></tr>
+          <tr><td>Mitchell 1 or ALLDATA Repair Manual Subscription <span class="priority-tag p-nice">nice</span></td><td>Essential for unfamiliar vehicles</td><td>$130–200/mo</td></tr>
+          <tr><td>Business Cards + Door Hangers <span class="priority-tag p-must">must</span></td><td>500 each minimum</td><td>$60–120</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="total-bar">
+      <span class="total-bar-label">Total Estimated Startup Investment</span>
+      <span class="total-bar-val">$11,000 – $30,000 (tools + van = $20K–$50K)</span>
+    </div>
+  </div>
+
+  <!-- REVENUE PROJECTION -->
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <span class="section-title">Revenue Projection</span>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="revenue-grid">
+    <div class="rev-card m1">
+      <div class="rev-month">Month 1</div>
+      <div class="rev-range">$0 – $500</div>
+      <div class="rev-note">Setup mode. Maybe a few test jobs for friends/family to validate pricing and workflow.</div>
+    </div>
+    <div class="rev-card m2">
+      <div class="rev-month">Month 2</div>
+      <div class="rev-range">$2,000 – $4,000</div>
+      <div class="rev-note">Building reputation, first real customers, 1–2 jobs/day. Expect growing pains.</div>
+    </div>
+    <div class="rev-card m3">
+      <div class="rev-month">Month 3</div>
+      <div class="rev-range">$6,000 – $10,000</div>
+      <div class="rev-note">3–5 jobs/day, first fleet account, Google reviews driving organic calls.</div>
+    </div>
+    <div class="rev-card" style="border-left: 3px solid #4ade80; background: var(--grease);">
+      <div class="rev-month" style="color: #4ade80;">Month 6+</div>
+      <div class="rev-range" style="color: #4ade80;">$8K – $14K/mo</div>
+      <div class="rev-note">Fully booked. 1 fleet account = $2–4K/mo alone. Consider hiring a tech.</div>
+    </div>
+  </div>
+
+  <!-- TIPS -->
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <span class="section-title">Key Success Factors</span>
+    <div class="section-line"></div>
+  </div>
+
+  <div class="tips-grid">
+    <div class="tip-card">
+      <div class="tip-icon">⭐</div>
+      <div class="tip-title">Reviews = Revenue</div>
+      <div class="tip-text">5-star Google reviews are your #1 growth engine. Ask every happy customer immediately after the job.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">🏢</div>
+      <div class="tip-title">Chase Fleets</div>
+      <div class="tip-text">One landscaping company with 6 trucks can pay $1,500–3,000/month in recurring maintenance. Target them early.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">🧾</div>
+      <div class="tip-title">Know Your Numbers</div>
+      <div class="tip-text">Track every job's labor hours and parts cost. Most new operators underprice by 20–30%.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">📍</div>
+      <div class="tip-title">Stay in Your Zone</div>
+      <div class="tip-text">Limit travel radius to 15–20 miles when starting. Drive time is unpaid time.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">🛠️</div>
+      <div class="tip-title">Stick to Core Services</div>
+      <div class="tip-text">Oil changes, brakes, batteries, starters, alternators, and diagnostics. Decline jobs needing a lift or alignment rack.</div>
+    </div>
+    <div class="tip-card">
+      <div class="tip-icon">📦</div>
+      <div class="tip-title">Parts Markup = Profit</div>
+      <div class="tip-text">Mark parts up 30–50% above cost. This is standard practice and often equals or exceeds your labor profit.</div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
