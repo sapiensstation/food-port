@@ -21,6 +21,7 @@ import { PrismaService } from '../../database/prisma.service';
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, PrismaService],
+  // JwtService is available via JwtModule.registerAsync above
   exports: [JwtStrategy, PassportModule],
 })
 export class AuthModule {}

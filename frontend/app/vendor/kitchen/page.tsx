@@ -179,8 +179,8 @@ export default function KDSPage() {
 
   const fetchOrders = useCallback(async () => {
     try {
-      const data = await apiFetch<KDSOrder[]>('/kds/orders');
-      setOrders(data);
+      const data = await apiFetch<{ vendor_id: string; new: KDSOrder[]; preparing: KDSOrder[]; ready: KDSOrder[] }>('/kds/orders');
+      setOrders([...(data.new ?? []), ...(data.preparing ?? []), ...(data.ready ?? [])]);
     } catch {}
   }, []);
 
@@ -210,7 +210,13 @@ export default function KDSPage() {
   }, [orders, isKDSMuted]);
 
   async function handleAction(itemId: string, status: OrderItemStatus, rejection_reason?: string) {
-    await apiPatch(`/kds/orders/${itemId}/status`, { status, rejection_reason });
+    const endpoint =
+      status === 'accepted' ? `/kds/items/${itemId}/accept`
+      : status === 'preparing' ? `/kds/items/${itemId}/preparing`
+      : status === 'ready' ? `/kds/items/${itemId}/ready`
+      : status === 'completed' ? `/kds/items/${itemId}/complete`
+      : `/kds/items/${itemId}/reject`;
+    await apiPatch(endpoint, rejection_reason ? { reason: rejection_reason } : {});
     setOrders((prev) =>
       prev.map((o) => (o.order_item_id === itemId ? { ...o, status } : o)),
     );

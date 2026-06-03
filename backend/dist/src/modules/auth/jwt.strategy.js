@@ -26,6 +26,21 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
         this.prisma = prisma;
     }
     async validate(payload) {
+        if (payload.sub.startsWith('pin:')) {
+            const pinId = payload.sub.slice(4);
+            const staffPin = await this.prisma.staffPin.findUnique({ where: { id: pinId } });
+            if (!staffPin || !staffPin.is_active) {
+                throw new common_1.UnauthorizedException('Staff PIN not found or inactive');
+            }
+            return {
+                id: staffPin.id,
+                supabase_id: payload.sub,
+                email: `pin:${pinId}`,
+                role: staffPin.role,
+                vendor_id: staffPin.vendor_id,
+                full_name: staffPin.label,
+            };
+        }
         const user = await this.prisma.user.findUnique({
             where: { supabase_id: payload.sub },
         });

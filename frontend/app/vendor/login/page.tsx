@@ -17,6 +17,11 @@ interface AuthResponse {
   user: { id: string; email: string; role: string; vendor_id: string | null };
 }
 
+interface PinAuthResponse {
+  access_token: string;
+  staff: { pin_id: string; vendor_id: string; vendor_name: string; role: string; label: string };
+}
+
 export default function VendorLoginPage() {
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
@@ -52,11 +57,16 @@ export default function VendorLoginPage() {
     if (pin.length !== 4 || !vendorId) return;
     setPinLoading(true);
     try {
-      const res = await apiPost<AuthResponse>('/auth/pin-login', {
+      const res = await apiPost<PinAuthResponse>('/auth/pin-login', {
         vendor_id: vendorId,
         pin,
       });
-      login(res.access_token, res.user);
+      login(res.access_token, {
+        id: res.staff.pin_id,
+        email: `${res.staff.label} @ ${res.staff.vendor_name}`,
+        role: res.staff.role,
+        vendor_id: res.staff.vendor_id,
+      });
       router.replace('/vendor/kitchen');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Invalid PIN';

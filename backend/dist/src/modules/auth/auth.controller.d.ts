@@ -16,7 +16,7 @@ export declare class AuthController {
         };
     }>;
     pinLogin(dto: PinLoginDto): Promise<{
-        access_token: null;
+        access_token: string;
         staff: {
             pin_id: string;
             vendor_id: string;

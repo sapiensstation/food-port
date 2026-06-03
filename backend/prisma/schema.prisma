@@ -91,15 +91,16 @@ model Vendor {
 }
 
 model User {
-  id          String   @id @default(uuid())
-  supabase_id String   @unique
-  email       String   @unique
-  full_name   String
-  role        UserRole
-  vendor_id   String?
-  is_active   Boolean  @default(true)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  id            String   @id @default(uuid())
+  supabase_id   String   @unique
+  email         String   @unique
+  full_name     String
+  role          UserRole
+  vendor_id     String?
+  password_hash String?
+  is_active     Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
 
   vendor         Vendor?              @relation(fields: [vendor_id], references: [id])
   sessions       Session[]

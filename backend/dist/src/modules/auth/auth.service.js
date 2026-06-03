@@ -45,16 +45,25 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
+const jwt_1 = require("@nestjs/jwt");
 const supabase_js_1 = require("@supabase/supabase-js");
 const bcrypt = __importStar(require("bcryptjs"));
 const prisma_service_1 = require("../../database/prisma.service");
 let AuthService = class AuthService {
-    constructor(prisma, config) {
+    constructor(prisma, config, jwtService) {
         this.prisma = prisma;
         this.config = config;
+        this.jwtService = jwtService;
         this.supabase = (0, supabase_js_1.createClient)(config.get('supabase.url') ?? '', config.get('supabase.serviceRoleKey') ?? '');
     }
+    isLocalDev() {
+        const url = this.config.get('supabase.url') ?? '';
+        return url.includes('localhost') || url.includes('127.0.0.1');
+    }
     async login(dto) {
+        if (this.isLocalDev()) {
+            return this.localLogin(dto);
+        }
         const { data, error } = await this.supabase.auth.signInWithPassword({
             email: dto.email,
             password: dto.password,
@@ -70,6 +79,30 @@ let AuthService = class AuthService {
         }
         return {
             access_token: data.session.access_token,
+            user: this.formatUser(user),
+        };
+    }
+    async localLogin(dto) {
+        const user = await this.prisma.user.findUnique({ where: { email: dto.email } });
+        if (!user || !user.is_active) {
+            throw new common_1.UnauthorizedException('Invalid email or password');
+        }
+        if (!user.password_hash) {
+            throw new common_1.UnauthorizedException('Account has no local password — re-run seed');
+        }
+        const valid = await bcrypt.compare(dto.password, user.password_hash);
+        if (!valid) {
+            throw new common_1.UnauthorizedException('Invalid email or password');
+        }
+        const payload = {
+            sub: user.supabase_id,
+            email: user.email,
+            role: 'authenticated',
+            aud: 'authenticated',
+        };
+        const access_token = this.jwtService.sign(payload, { expiresIn: '24h' });
+        return {
+            access_token,
             user: this.formatUser(user),
         };
     }
@@ -94,16 +127,21 @@ let AuthService = class AuthService {
         });
         if (!vendor)
             throw new common_1.NotFoundException('Vendor not found');
-        return {
-            access_token: null,
-            staff: {
-                pin_id: matchedPin.id,
-                vendor_id: dto.vendor_id,
-                vendor_name: vendor.name,
-                role: matchedPin.role,
-                label: matchedPin.label,
-            },
+        const staff = {
+            pin_id: matchedPin.id,
+            vendor_id: dto.vendor_id,
+            vendor_name: vendor.name,
+            role: matchedPin.role,
+            label: matchedPin.label,
         };
+        const payload = {
+            sub: `pin:${matchedPin.id}`,
+            vendor_id: dto.vendor_id,
+            role: 'authenticated',
+            aud: 'authenticated',
+        };
+        const access_token = this.jwtService.sign(payload, { expiresIn: '12h' });
+        return { access_token, staff };
     }
     async getMe(supabaseId) {
         const user = await this.prisma.user.findUnique({
@@ -128,6 +166,7 @@ exports.AuthService = AuthService;
 exports.AuthService = AuthService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        config_1.ConfigService])
+        config_1.ConfigService,
+        jwt_1.JwtService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

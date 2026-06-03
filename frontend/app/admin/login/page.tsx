@@ -19,7 +19,7 @@ export default function AdminLoginPage() {
     setError('');
     setLoading(true);
     try {
-      const res = await apiPost<{ token: string; user: { id: string; email: string; role: string; full_name: string } }>(
+      const res = await apiPost<{ access_token: string; user: { id: string; email: string; role: string; full_name: string } }>(
         '/auth/login',
         { email, password },
       );
@@ -27,7 +27,7 @@ export default function AdminLoginPage() {
         setError('Access denied — admin account required');
         return;
       }
-      login(res.token, res.user);
+      login(res.access_token, res.user);
       router.push('/admin/dashboard');
     } catch {
       setError('Invalid credentials');

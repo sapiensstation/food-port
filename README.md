@@ -171,13 +171,75 @@ npm run prisma:studio
 
 ## Default Credentials (after seed)
 
-| Role | Email | Password / PIN |
-|---|---|---|
-| Super Admin | `admin@foodvillage.com` | `admin123` |
-| Vendor (Booth 1) | `booth1@foodvillage.com` | `vendor123` |
-| Kitchen PIN | — | `1234` |
+Supabase Auth accounts must be created manually in your Supabase dashboard (Authentication → Users) — the seed script does not create them. Use the credentials below.
 
-> Change all credentials before any real deployment.
+---
+
+### 1 — Super Admin
+
+**Login URL:** `http://localhost:3000/admin/login`
+**Auth method:** Email + Password
+
+| Field | Value |
+|---|---|
+| Email | `admin@foodvillage.com` |
+| Password | `admin123` |
+| Role | `super_admin` |
+
+Access: full admin dashboard — orders, vendors, finance, analytics, promotions, audit log.
+
+---
+
+### 2 — Vendor Manager (Booth 1 · Burger Barn)
+
+**Login URL:** `http://localhost:3000/vendor/login`
+**Auth method:** Email + Password
+
+| Field | Value |
+|---|---|
+| Email | `booth1@foodvillage.com` |
+| Password | `vendor123` |
+| Role | `vendor_admin` |
+| Vendor | Burger Barn (Booth 1) |
+
+Access: vendor portal — menu management, order board, settings for Burger Barn.
+
+> Additional vendor accounts follow the same pattern: `booth2@foodvillage.com`, `booth3@foodvillage.com`, ... `booth10@foodvillage.com` — all with password `vendor123`. Create each in Supabase and assign the matching vendor in the `users` table.
+
+---
+
+### 3 — Kitchen Staff · Burger Barn (PIN login)
+
+**Login URL:** `http://localhost:3000/vendor/kitchen`
+**Auth method:** Vendor ID + 4-digit PIN
+
+| Field | Value |
+|---|---|
+| Vendor ID | `d230c843-1517-46bf-9970-673bb9c81efb` |
+| PIN | `1234` |
+| Label | Kitchen Station 1 |
+| Role | `vendor_kitchen` |
+
+This PIN is seeded automatically by `npm run seed`. To log in, select **Burger Barn** on the kitchen login screen and enter PIN `1234`.
+
+**All vendor IDs (for PIN login):**
+
+| Booth | Vendor | Vendor ID |
+|---|---|---|
+| 1 | Burger Barn | `d230c843-1517-46bf-9970-673bb9c81efb` |
+| 2 | Pizza Palace | `0af39d20-c78d-432b-b916-f590fd0798d5` |
+| 3 | Taco Fiesta | `dde5452f-0789-4f46-92a4-213d96ed5c81` |
+| 4 | Wok & Roll | `bae52c21-3d64-4ca6-bb8d-b3af086daf57` |
+| 5 | Juice Junction | `5f0e976d-fd9e-4958-a813-aa1e47098874` |
+| 6 | Spice Garden | `e27e3850-092d-4943-bde3-bc3c3019040b` |
+| 7 | Sushi Stop | `92dde171-5e16-4120-9e56-87f5758c1d81` |
+| 8 | Falafel House | `27aca20c-cb63-4a5d-a871-ff19c5c92eb3` |
+| 9 | Dessert Den | `9c04dd38-6674-42da-9b1a-d044d9acec2d` |
+| 10 | BBQ Boss | `35f3efa5-8a77-4067-916c-f6884285c843` |
+
+---
+
+> **Warning:** Change all passwords and PINs before any real deployment.
 
 ---
 

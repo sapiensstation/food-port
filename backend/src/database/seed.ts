@@ -291,7 +291,7 @@ async function main() {
     console.log(`✅ ${vd.name} seeded`);
   }
 
-  // Admin user (Supabase handles auth — this just records the DB profile)
+  // Staff PIN for Burger Barn kitchen
   const pinHash = await bcrypt.hash('1234', 10);
   const burgerVendor = await prisma.vendor.findUnique({ where: { slug: 'burger-barn' } });
   if (burgerVendor) {
@@ -300,15 +300,60 @@ async function main() {
       await prisma.staffPin.create({
         data: { vendor_id: burgerVendor.id, pin_hash: pinHash, label: 'Kitchen Station 1', role: 'vendor_kitchen' },
       });
-      console.log('✅ Sample staff PIN created for Burger Barn (PIN: 1234)');
+      console.log('✅ Staff PIN created for Burger Barn (PIN: 1234)');
     }
   }
+
+  // Local dev users — password_hash enables login without Supabase
+  const adminPassHash = await bcrypt.hash('admin123', 10);
+  const vendorPassHash = await bcrypt.hash('vendor123', 10);
+
+  // Super admin
+  await prisma.user.upsert({
+    where: { supabase_id: '00000000-0000-0000-0000-000000000001' },
+    update: { password_hash: adminPassHash },
+    create: {
+      supabase_id: '00000000-0000-0000-0000-000000000001',
+      email: 'admin@foodvillage.com',
+      full_name: 'Super Admin',
+      role: 'super_admin',
+      password_hash: adminPassHash,
+    },
+  });
+  console.log('✅ Super admin user seeded (admin@foodvillage.com / admin123)');
+
+  // Vendor manager accounts — one per booth
+  for (let i = 0; i < VENDORS.length; i++) {
+    const vd = VENDORS[i];
+    const vendor = await prisma.vendor.findUnique({ where: { slug: vd.slug } });
+    if (!vendor) continue;
+
+    // Deterministic supabase_id per booth: 00000000-0000-0000-0001-XXXXXXXXXXXX
+    const supabaseId = `00000000-0000-0000-0001-${String(i + 1).padStart(12, '0')}`;
+    const email = `booth${vd.booth}@foodvillage.com`;
+
+    await prisma.user.upsert({
+      where: { supabase_id: supabaseId },
+      update: { password_hash: vendorPassHash, vendor_id: vendor.id },
+      create: {
+        supabase_id: supabaseId,
+        email,
+        full_name: `${vd.name} Manager`,
+        role: 'vendor_owner',
+        vendor_id: vendor.id,
+        password_hash: vendorPassHash,
+      },
+    });
+  }
+  console.log('✅ Vendor manager accounts seeded (booth1–10@foodvillage.com / vendor123)');
 
   console.log('\n🎉 Seed complete!');
   console.log('  • 10 vendors with menus');
   console.log('  • 20 tables');
   console.log('  • 1 food village config');
-  console.log('  • Sample staff PIN for Burger Barn: 1234');
+  console.log('  • Super admin: admin@foodvillage.com / admin123');
+  console.log('  • Vendor managers: booth1–10@foodvillage.com / vendor123');
+  console.log('  • Kitchen PIN (Burger Barn): 1234');
 }
 
 main()
