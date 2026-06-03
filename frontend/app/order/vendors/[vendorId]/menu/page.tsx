@@ -5,12 +5,82 @@ import { motion } from 'framer-motion';
 import { apiFetch } from '@/lib/api';
 import { useCartStore } from '@/store/cartStore';
 import { useUIStore } from '@/store/uiStore';
-import type { CartItem, MenuCategory, MenuItem, ModifierGroup, Vendor } from '@/types';
+import type { CartItem, MenuItem, ModifierGroup, Vendor } from '@/types';
 import Spinner from '@/components/ui/Spinner';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import Badge from '@/components/ui/Badge';
 import PageTransition from '@/components/ui/PageTransition';
+
+// Types matching actual public menu API response shape
+interface PubItemSummary {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  image_url: string | null;
+  prep_time_minutes: number | null;
+  dietary_tags: string[];
+  allergens: string[];
+  is_available: boolean;
+  has_modifiers: boolean;
+  category_id: string;
+}
+
+interface PubCategoryEntry {
+  category: { id: string; name: string; slug: string; sort_order: number; item_count: number };
+  items: PubItemSummary[];
+}
+
+interface PubVendorMenuData {
+  vendor: Vendor;
+  categories: PubCategoryEntry[];
+}
+
+interface PubItemDetail extends PubItemSummary {
+  modifier_groups: Array<{
+    id: string;
+    name: string;
+    is_required: boolean;
+    min_selections: number;
+    max_selections: number;
+    modifiers: Array<{
+      id: string;
+      name: string;
+      price_adjustment: number;
+      is_available: boolean;
+    }>;
+  }>;
+}
+
+function toMenuItem(d: PubItemDetail, vendorId: string): MenuItem {
+  return {
+    id: d.id,
+    vendor_id: vendorId,
+    category_id: d.category_id,
+    name: d.name,
+    description: d.description,
+    base_price: d.price,
+    image_url: d.image_url,
+    is_available: d.is_available,
+    is_featured: false,
+    dietary_tags: d.dietary_tags,
+    prep_time_minutes: d.prep_time_minutes,
+    modifier_groups: d.modifier_groups.map((g) => ({
+      id: g.id,
+      name: g.name,
+      selection_type: g.max_selections === 1 ? 'single' : 'multiple',
+      min_selections: g.min_selections,
+      max_selections: g.max_selections,
+      modifiers: g.modifiers.map((m) => ({
+        id: m.id,
+        name: m.name,
+        price_delta: m.price_adjustment,
+        is_available: m.is_available,
+      })),
+    })),
+  };
+}
 
 const DIETARY_ICONS: Record<string, string> = {
   vegan: '🌱',
@@ -20,26 +90,22 @@ const DIETARY_ICONS: Record<string, string> = {
   halal: '☪',
 };
 
-interface VendorMenuData {
-  vendor: Vendor;
-  categories: MenuCategory[];
-}
-
 export default function VendorMenuPage() {
   const { vendorId } = useParams<{ vendorId: string }>();
-  const [data, setData] = useState<VendorMenuData | null>(null);
+  const [data, setData] = useState<PubVendorMenuData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
+  const [loadingItemId, setLoadingItemId] = useState<string | null>(null);
   const categoryRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const addItem = useCartStore((s) => s.addItem);
   const addToast = useUIStore((s) => s.addToast);
 
   useEffect(() => {
-    apiFetch<VendorMenuData>(`/vendors/${vendorId}/menu`)
+    apiFetch<PubVendorMenuData>(`/vendors/${vendorId}/menu`)
       .then((d) => {
         setData(d);
-        if (d.categories[0]) setActiveCategory(d.categories[0].id);
+        if (d.categories[0]) setActiveCategory(d.categories[0].category.id);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -48,6 +114,19 @@ export default function VendorMenuPage() {
   function scrollToCategory(catId: string) {
     setActiveCategory(catId);
     categoryRefs.current[catId]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function handleItemClick(item: PubItemSummary) {
+    if (!item.is_available) return;
+    setLoadingItemId(item.id);
+    try {
+      const detail = await apiFetch<PubItemDetail>(`/menu-items/${item.id}`);
+      setSelectedItem(toMenuItem(detail, vendorId));
+    } catch {
+      addToast({ message: 'Failed to load item details', type: 'error' });
+    } finally {
+      setLoadingItemId(null);
+    }
   }
 
   if (loading) {
@@ -72,7 +151,7 @@ export default function VendorMenuPage() {
             {vendor.name.toUpperCase()}
           </h1>
           <p className="text-brand-dim text-sm font-body">
-            {vendor.cuisine_type} · ~{vendor.avg_prep_time} min
+            {vendor.cuisine_type} · ~{vendor.avg_prep_time_minutes} min
           </p>
         </div>
       </div>
@@ -82,15 +161,15 @@ export default function VendorMenuPage() {
         <div className="flex gap-1 overflow-x-auto px-4 py-2 scrollbar-none">
           {categories.map((cat) => (
             <button
-              key={cat.id}
-              onClick={() => scrollToCategory(cat.id)}
+              key={cat.category.id}
+              onClick={() => scrollToCategory(cat.category.id)}
               className={`flex-shrink-0 px-3.5 py-1.5 rounded-lg text-sm font-semibold transition-all ${
-                activeCategory === cat.id
+                activeCategory === cat.category.id
                   ? 'text-brand-orange border-b-2 border-brand-orange'
                   : 'text-brand-dim hover:text-brand-white'
               }`}
             >
-              {cat.name}
+              {cat.category.name}
             </button>
           ))}
         </div>
@@ -100,29 +179,28 @@ export default function VendorMenuPage() {
       <div className="px-4 py-4 max-w-2xl mx-auto space-y-8">
         {categories.map((cat) => (
           <div
-            key={cat.id}
-            ref={(el) => { categoryRefs.current[cat.id] = el; }}
+            key={cat.category.id}
+            ref={(el) => { categoryRefs.current[cat.category.id] = el; }}
           >
             <h2 className="font-heading text-2xl text-brand-white tracking-wide mb-3">
-              {cat.name.toUpperCase()}
+              {cat.category.name.toUpperCase()}
             </h2>
             <div className="grid grid-cols-2 gap-3">
-              {cat.menu_items.map((item, i) => (
+              {cat.items.map((item, i) => (
                 <motion.button
                   key={item.id}
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.03 }}
-                  onClick={() => item.is_available && setSelectedItem(item)}
+                  onClick={() => item.is_available && handleItemClick(item)}
                   className={`text-left glass rounded-2xl overflow-hidden transition-all ${
                     item.is_available
                       ? 'hover:border-white/15 active:scale-95'
                       : 'opacity-50 cursor-not-allowed'
-                  }`}
+                  } ${loadingItemId === item.id ? 'opacity-60 pointer-events-none' : ''}`}
                 >
-                  {/* Image placeholder */}
                   <div
-                    className="h-24 w-full flex items-center justify-center text-3xl"
+                    className="h-24 w-full relative flex items-center justify-center text-3xl"
                     style={{ backgroundColor: `${vendor.booth_color}18` }}
                   >
                     {item.image_url ? (
@@ -131,6 +209,11 @@ export default function VendorMenuPage() {
                     {!item.is_available && (
                       <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                         <span className="text-xs font-semibold text-red-400">SOLD OUT</span>
+                      </div>
+                    )}
+                    {loadingItemId === item.id && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <Spinner size="sm" />
                       </div>
                     )}
                   </div>
@@ -148,7 +231,7 @@ export default function VendorMenuPage() {
                       </div>
                     )}
                     <p className="font-mono text-brand-orange text-sm font-semibold">
-                      ${item.base_price.toFixed(2)}
+                      ${item.price.toFixed(2)}
                     </p>
                   </div>
                 </motion.button>
@@ -183,9 +266,7 @@ interface ItemDetailModalProps {
 }
 
 function ItemDetailModal({ item, vendor, onClose, onAdd }: ItemDetailModalProps) {
-  const [selectedModifiers, setSelectedModifiers] = useState<
-    Record<string, string[]>
-  >({});
+  const [selectedModifiers, setSelectedModifiers] = useState<Record<string, string[]>>({});
   const [quantity, setQuantity] = useState(1);
   const [instructions, setInstructions] = useState('');
 
@@ -230,7 +311,6 @@ function ItemDetailModal({ item, vendor, onClose, onAdd }: ItemDetailModalProps)
 
   return (
     <Modal isOpen onClose={onClose} size="lg">
-      {/* Image */}
       <div
         className="h-44 w-full flex items-center justify-center text-6xl"
         style={{ backgroundColor: `${vendor.booth_color}18` }}

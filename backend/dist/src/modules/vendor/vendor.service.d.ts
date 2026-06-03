@@ -82,8 +82,8 @@ export declare class VendorService {
                     price_adjustment: number;
                 }[];
             } & {
-                vendor_id: string;
                 id: string;
+                vendor_id: string;
                 is_active: boolean;
                 created_at: Date;
                 updated_at: Date;
@@ -97,8 +97,8 @@ export declare class VendorService {
             modifier_group_id: string;
         })[];
     } & {
-        vendor_id: string;
         id: string;
+        vendor_id: string;
         created_at: Date;
         updated_at: Date;
         name: string;
@@ -130,8 +130,8 @@ export declare class VendorService {
                     price_adjustment: number;
                 }[];
             } & {
-                vendor_id: string;
                 id: string;
+                vendor_id: string;
                 is_active: boolean;
                 created_at: Date;
                 updated_at: Date;
@@ -145,8 +145,8 @@ export declare class VendorService {
             modifier_group_id: string;
         })[];
     } & {
-        vendor_id: string;
         id: string;
+        vendor_id: string;
         created_at: Date;
         updated_at: Date;
         name: string;
@@ -166,8 +166,8 @@ export declare class VendorService {
         success: boolean;
     }>;
     updateAvailability(user: JwtUser, itemId: string, dto: UpdateAvailabilityDto): Promise<{
-        vendor_id: string;
         id: string;
+        vendor_id: string;
         created_at: Date;
         updated_at: Date;
         name: string;
@@ -239,8 +239,8 @@ export declare class VendorService {
         item_count: number;
     }[]>;
     createCategory(user: JwtUser, dto: CreateCategoryDto): Promise<{
-        vendor_id: string;
         id: string;
+        vendor_id: string;
         is_active: boolean;
         created_at: Date;
         updated_at: Date;
@@ -249,8 +249,8 @@ export declare class VendorService {
         sort_order: number;
     }>;
     updateCategory(user: JwtUser, categoryId: string, dto: UpdateCategoryDto): Promise<{
-        vendor_id: string;
         id: string;
+        vendor_id: string;
         is_active: boolean;
         created_at: Date;
         updated_at: Date;
@@ -269,8 +269,8 @@ export declare class VendorService {
             price_adjustment: number;
         }[];
     } & {
-        vendor_id: string;
         id: string;
+        vendor_id: string;
         is_active: boolean;
         created_at: Date;
         updated_at: Date;
@@ -290,8 +290,8 @@ export declare class VendorService {
             price_adjustment: number;
         }[];
     } & {
-        vendor_id: string;
         id: string;
+        vendor_id: string;
         is_active: boolean;
         created_at: Date;
         updated_at: Date;

@@ -72,11 +72,11 @@ export declare class AdminService {
             total: number;
             item_count: number;
             items: {
+                id: string;
                 vendor: {
                     name: string;
                     booth_color: string;
                 };
-                id: string;
                 status: import(".prisma/client").$Enums.OrderItemStatus;
                 quantity: number;
                 item_name: string;
@@ -94,8 +94,8 @@ export declare class AdminService {
         };
         promotions: ({
             promotion: {
-                vendor_id: string | null;
                 id: string;
+                vendor_id: string | null;
                 is_active: boolean;
                 created_at: Date;
                 updated_at: Date;
@@ -130,8 +130,8 @@ export declare class AdminService {
                 price_at_order: number;
             }[];
         } & {
-            vendor_id: string;
             id: string;
+            vendor_id: string;
             created_at: Date;
             updated_at: Date;
             status: import(".prisma/client").$Enums.OrderItemStatus;
@@ -253,15 +253,15 @@ export declare class AdminService {
     getVendorStaff(vendorId: string): Promise<{
         users: {
             email: string;
+            role: import(".prisma/client").$Enums.UserRole;
             id: string;
             full_name: string;
-            role: import(".prisma/client").$Enums.UserRole;
             is_active: boolean;
             created_at: Date;
         }[];
         pins: {
-            id: string;
             role: import(".prisma/client").$Enums.UserRole;
+            id: string;
             is_active: boolean;
             label: string;
         }[];
@@ -308,8 +308,8 @@ export declare class AdminService {
     }>;
     getPromotions(active?: boolean, page?: number, limit?: number): Promise<{
         promotions: {
-            vendor_id: string | null;
             id: string;
+            vendor_id: string | null;
             is_active: boolean;
             created_at: Date;
             updated_at: Date;
@@ -327,8 +327,8 @@ export declare class AdminService {
         pages: number;
     }>;
     createPromotion(actor: JwtUser, dto: CreatePromotionDto): Promise<{
-        vendor_id: string | null;
         id: string;
+        vendor_id: string | null;
         is_active: boolean;
         created_at: Date;
         updated_at: Date;
@@ -342,8 +342,8 @@ export declare class AdminService {
         current_uses: number;
     }>;
     updatePromotion(actor: JwtUser, id: string, dto: UpdatePromotionDto): Promise<{
-        vendor_id: string | null;
         id: string;
+        vendor_id: string | null;
         is_active: boolean;
         created_at: Date;
         updated_at: Date;
@@ -383,8 +383,8 @@ export declare class AdminService {
         valid: boolean;
         discount_amount: number;
         promotion: {
-            vendor_id: string | null;
             id: string;
+            vendor_id: string | null;
             is_active: boolean;
             created_at: Date;
             updated_at: Date;

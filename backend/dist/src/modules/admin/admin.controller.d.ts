@@ -74,11 +74,11 @@ export declare class AdminController {
             total: number;
             item_count: number;
             items: {
+                id: string;
                 vendor: {
                     name: string;
                     booth_color: string;
                 };
-                id: string;
                 status: import(".prisma/client").$Enums.OrderItemStatus;
                 quantity: number;
                 item_name: string;
@@ -96,8 +96,8 @@ export declare class AdminController {
         };
         promotions: ({
             promotion: {
-                vendor_id: string | null;
                 id: string;
+                vendor_id: string | null;
                 is_active: boolean;
                 created_at: Date;
                 updated_at: Date;
@@ -132,8 +132,8 @@ export declare class AdminController {
                 price_at_order: number;
             }[];
         } & {
-            vendor_id: string;
             id: string;
+            vendor_id: string;
             created_at: Date;
             updated_at: Date;
             status: import(".prisma/client").$Enums.OrderItemStatus;
@@ -254,15 +254,15 @@ export declare class AdminController {
     getVendorStaff(id: string): Promise<{
         users: {
             email: string;
+            role: import(".prisma/client").$Enums.UserRole;
             id: string;
             full_name: string;
-            role: import(".prisma/client").$Enums.UserRole;
             is_active: boolean;
             created_at: Date;
         }[];
         pins: {
-            id: string;
             role: import(".prisma/client").$Enums.UserRole;
+            id: string;
             is_active: boolean;
             label: string;
         }[];
@@ -310,8 +310,8 @@ export declare class AdminController {
     exportFinance(from: string | undefined, to: string | undefined, res: Response): Promise<void>;
     getPromotions(active?: string, page?: string, limit?: string): Promise<{
         promotions: {
-            vendor_id: string | null;
             id: string;
+            vendor_id: string | null;
             is_active: boolean;
             created_at: Date;
             updated_at: Date;
@@ -329,8 +329,8 @@ export declare class AdminController {
         pages: number;
     }>;
     createPromotion(user: JwtUser, dto: CreatePromotionDto): Promise<{
-        vendor_id: string | null;
         id: string;
+        vendor_id: string | null;
         is_active: boolean;
         created_at: Date;
         updated_at: Date;
@@ -344,8 +344,8 @@ export declare class AdminController {
         current_uses: number;
     }>;
     updatePromotion(user: JwtUser, id: string, dto: UpdatePromotionDto): Promise<{
-        vendor_id: string | null;
         id: string;
+        vendor_id: string | null;
         is_active: boolean;
         created_at: Date;
         updated_at: Date;
@@ -414,8 +414,8 @@ export declare class PromotionsPublicController {
         valid: boolean;
         discount_amount: number;
         promotion: {
-            vendor_id: string | null;
             id: string;
+            vendor_id: string | null;
             is_active: boolean;
             created_at: Date;
             updated_at: Date;

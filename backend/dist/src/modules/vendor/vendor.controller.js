@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.VendorController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const throttler_1 = require("@nestjs/throttler");
 const vendor_service_1 = require("./vendor.service");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../common/guards/roles.guard");
@@ -292,6 +293,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], VendorController.prototype, "updateStatus", null);
 exports.VendorController = VendorController = __decorate([
+    (0, throttler_1.SkipThrottle)({ auth: true, order: true }),
     (0, swagger_1.ApiTags)('Vendor'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

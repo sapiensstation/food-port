@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SessionsController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const throttler_1 = require("@nestjs/throttler");
 const sessions_service_1 = require("./sessions.service");
 const create_session_dto_1 = require("./dto/create-session.dto");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
@@ -61,6 +62,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], SessionsController.prototype, "close", null);
 exports.SessionsController = SessionsController = __decorate([
+    (0, throttler_1.SkipThrottle)({ auth: true, order: true }),
     (0, swagger_1.ApiTags)('Sessions'),
     (0, common_1.Controller)('sessions'),
     __metadata("design:paramtypes", [sessions_service_1.SessionsService])

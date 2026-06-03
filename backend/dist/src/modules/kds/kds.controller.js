@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.KdsController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const throttler_1 = require("@nestjs/throttler");
 const kds_service_1 = require("./kds.service");
 const reject_item_dto_1 = require("./dto/reject-item.dto");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
@@ -104,6 +105,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], KdsController.prototype, "queueStats", null);
 exports.KdsController = KdsController = __decorate([
+    (0, throttler_1.SkipThrottle)({ auth: true, order: true }),
     (0, swagger_1.ApiTags)('KDS'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),

@@ -7,8 +7,11 @@ export class SessionsService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateSessionDto) {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(dto.table_id);
     const table = await this.prisma.table.findFirst({
-      where: { id: dto.table_id, is_active: true },
+      where: isUuid
+        ? { id: dto.table_id, is_active: true }
+        : { table_number: parseInt(dto.table_id, 10), is_active: true },
     });
     if (!table) throw new NotFoundException('Table not found');
 
@@ -17,7 +20,7 @@ export class SessionsService {
 
     const session = await this.prisma.session.create({
       data: {
-        table_id: dto.table_id,
+        table_id: table.id,
         waiter_id: dto.waiter_id ?? null,
         expires_at: expiresAt,
       },

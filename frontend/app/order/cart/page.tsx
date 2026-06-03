@@ -26,8 +26,7 @@ export default function CartPage() {
         vendor_id: item.vendorId,
         menu_item_id: item.menuItemId,
         quantity: item.quantity,
-        unit_price: item.unitPrice,
-        modifiers: item.selectedModifiers.map((m) => ({ modifier_id: m.modifierId })),
+        modifiers: item.selectedModifiers.map((m) => ({ modifier_id: m.modifierId, quantity: 1 })),
         special_instructions: item.specialInstructions || undefined,
       }));
 

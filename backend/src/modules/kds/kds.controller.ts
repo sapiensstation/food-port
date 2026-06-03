@@ -1,5 +1,6 @@
 import { Controller, Get, Patch, Param, Body, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { KdsService } from './kds.service';
 import { RejectItemDto } from './dto/reject-item.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -7,6 +8,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser, JwtUser } from '../../common/decorators/current-user.decorator';
 
+@SkipThrottle({ auth: true, order: true })
 @ApiTags('KDS')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)

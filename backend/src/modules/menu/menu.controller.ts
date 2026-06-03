@@ -1,9 +1,11 @@
 import { Controller, Get, Param, Query, SetMetadata } from '@nestjs/common';
 import { ApiTags, ApiQuery } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { MenuService } from './menu.service';
 
 const Public = () => SetMetadata('isPublic', true);
 
+@SkipThrottle({ auth: true, order: true })
 @ApiTags('Menu')
 @Controller()
 export class MenuController {

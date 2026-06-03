@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Put, Delete, Patch, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { VendorService } from './vendor.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -12,6 +13,7 @@ import {
   UpdateVendorSettingsDto, UpdateVendorStatusDto,
 } from './dto/create-menu-item.dto';
 
+@SkipThrottle({ auth: true, order: true })
 @ApiTags('Vendor')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)

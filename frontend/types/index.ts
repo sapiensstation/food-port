@@ -7,7 +7,7 @@ export interface Vendor {
   booth_color: string;
   description: string | null;
   logo_url: string | null;
-  avg_prep_time: number;
+  avg_prep_time_minutes: number;
   is_accepting_orders: boolean;
   status: 'active' | 'inactive' | 'suspended';
 }

@@ -113,7 +113,7 @@ export default function VendorBrowsingPage() {
 
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono text-brand-dim">
-                    ~{vendor.avg_prep_time}m
+                    ~{vendor.avg_prep_time_minutes}m
                   </span>
                   {vendor.is_accepting_orders ? (
                     <span className="text-[10px] font-semibold text-green-400 bg-green-400/10 px-2 py-0.5 rounded-md">

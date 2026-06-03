@@ -1,7 +1,8 @@
 import {
   Controller, Get, Post, Put, Patch, Delete, Body, Param, Query, Res,
-  UseGuards, HttpCode, HttpStatus,
+  UseGuards, HttpCode, HttpStatus, SetMetadata,
 } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
 import { Response } from 'express';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
@@ -15,6 +16,7 @@ import {
   CreatePromotionDto, UpdatePromotionDto, ValidatePromoDto, CashLogDto,
 } from './dto/admin.dto';
 
+@SkipThrottle({ auth: true, order: true })
 @ApiTags('Admin')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -278,10 +280,12 @@ export class AdminController {
 }
 
 // ── Health check (public, no auth) ────────────────────────────────────────────
+@SkipThrottle({ auth: true, order: true })
 @Controller('health')
 export class HealthController {
   constructor(private adminService: AdminService) {}
 
+  @SetMetadata('isPublic', true)
   @Get()
   getHealth() {
     return this.adminService.getHealth();
@@ -289,6 +293,7 @@ export class HealthController {
 }
 
 // ── Promo validation (public customer-facing) ─────────────────────────────────
+@SkipThrottle({ auth: true, order: true })
 @Controller('promotions')
 export class PromotionsPublicController {
   constructor(private adminService: AdminService) {}

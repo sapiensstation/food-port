@@ -32,8 +32,11 @@ let OrdersService = class OrdersService {
         });
         if (existing)
             return this.formatOrder(existing);
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(dto.table_id);
         const table = await this.prisma.table.findFirst({
-            where: { id: dto.table_id, is_active: true },
+            where: isUuid
+                ? { id: dto.table_id, is_active: true }
+                : { table_number: parseInt(dto.table_id, 10), is_active: true },
         });
         if (!table)
             throw new common_1.NotFoundException('Table not found');
@@ -47,7 +50,7 @@ let OrdersService = class OrdersService {
             data: {
                 token_number: tokenNumber,
                 token_date: tokenDate,
-                table_id: dto.table_id,
+                table_id: table.id,
                 session_id: dto.session_id,
                 waiter_id: dto.waiter_id ?? null,
                 idempotency_key: dto.idempotency_key,

@@ -1,11 +1,13 @@
 import { Controller, Post, Get, Patch, Body, Param, UseGuards, SetMetadata } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 import { SessionsService } from './sessions.service';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 
 const Public = () => SetMetadata('isPublic', true);
 
+@SkipThrottle({ auth: true, order: true })
 @ApiTags('Sessions')
 @Controller('sessions')
 export class SessionsController {

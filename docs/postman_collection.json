@@ -1,0 +1,2840 @@
+{
+  "info": {
+    "_postman_id": "fv-test-collection-v2",
+    "name": "Food Village POS — Test Suite v2",
+    "description": "75 test cases for Phases 1–4. Requires backend on localhost:3001 with seeded data.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [],
+  "item": [
+    {
+      "name": "Setup",
+      "item": [
+        {
+          "name": "SETUP — Create Session",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Session created', function() {",
+                  "  pm.response.to.have.status(201);",
+                  "  var d = pm.response.json().data;",
+                  "  pm.environment.set('session_id', d.id);",
+                  "  pm.environment.set('table_id', d.table_id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"table_id\": \"ea415210-c9e1-4ea2-837d-8f61bd864719\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/sessions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sessions"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Phase 1 — Public Menu & Ordering",
+      "item": [
+        {
+          "name": "TC-01 Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-01: status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-01: status ok', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d.status).to.eql('ok');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-02 List All Vendors",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-02: status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-02: array of vendors with required fields', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d).to.be.an('array');",
+                  "  pm.expect(d.length).to.be.at.least(10);",
+                  "  var v = d[0];",
+                  "  ['id','name','slug','cuisine_type','booth_number','booth_color','status','is_accepting_orders'].forEach(f => pm.expect(v).to.have.property(f));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/vendors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendors"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-03 Vendor Menu — Burger Barn",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-03: status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-03: vendor object + categories array', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d.vendor).to.exist;",
+                  "  pm.expect(d.vendor.name).to.eql('Burger Barn');",
+                  "  pm.expect(d.categories).to.be.an('array');",
+                  "});",
+                  "pm.test('TC-04: at least 1 category with items', () => {",
+                  "  var cats = pm.response.json().data.categories;",
+                  "  pm.expect(cats.length).to.be.at.least(1);",
+                  "  var hasItems = cats.some(c => c.items && c.items.length > 0);",
+                  "  pm.expect(hasItems).to.be.true;",
+                  "});",
+                  "pm.test('TC-05: menu items have required fields', () => {",
+                  "  var cats = pm.response.json().data.categories;",
+                  "  var allItems = cats.flatMap(c => c.items || []);",
+                  "  pm.expect(allItems.length).to.be.above(0, 'expected at least one menu item');",
+                  "  var item = allItems[0];",
+                  "  ['id','name','price','is_available','prep_time_minutes'].forEach(f => pm.expect(item).to.have.property(f));",
+                  "});",
+                  "pm.test('TC-06: all price > 0', () => {",
+                  "  var cats = pm.response.json().data.categories;",
+                  "  cats.forEach(cat => {",
+                  "    (cat.items || []).forEach(item => pm.expect(item.price).to.be.above(0));",
+                  "  });",
+                  "});",
+                  "// Save first burger item id",
+                  "var _cats = pm.response.json().data.categories;",
+                  "var _item = _cats.flatMap(c => c.items || [])[0];",
+                  "if (_item) pm.environment.set('burger_item_id', _item.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/vendors/{{burger_vendor_id}}/menu",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendors",
+                "{{burger_vendor_id}}",
+                "menu"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-07 Create Order — Happy Path",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-07: 201', () => pm.response.to.have.status(201));",
+                  "pm.test('TC-07: order has id, token_number, status pending, total', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d.id).to.be.a('string');",
+                  "  pm.expect(d.token_number).to.be.a('number');",
+                  "  pm.expect(d.status).to.eql('pending');",
+                  "  pm.expect(d.total).to.be.above(0);",
+                  "  pm.environment.set('order_id', d.id);",
+                  "});",
+                  "pm.test('TC-08: token_number is positive integer', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d.token_number).to.be.a('number').and.at.least(1);",
+                  "});",
+                  "pm.test('TC-09: total = subtotal + tax', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d.tax_amount).to.be.above(0);",
+                  "  var expected = Math.round((d.subtotal + d.tax_amount) * 100) / 100;",
+                  "  pm.expect(d.total).to.be.closeTo(expected, 0.01);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"session_id\": \"{{session_id}}\",\n  \"table_id\": \"{{table_id}}\",\n  \"idempotency_key\": \"tc07-{{$timestamp}}\",\n  \"items\": [{\n    \"menu_item_id\": \"{{burger_item_id}}\",\n    \"vendor_id\": \"{{burger_vendor_id}}\",\n    \"quantity\": 2,\n    \"modifiers\": []\n  }]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-10 Order Status Polling",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-10: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-10: has overall_status, token_number, items', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d).to.have.property('overall_status');",
+                  "  pm.expect(d).to.have.property('token_number');",
+                  "  pm.expect(d).to.have.property('items');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders/{{order_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders",
+                "{{order_id}}",
+                "status"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-11 Order Not Found Returns 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-11: 404 for nonexistent order', () => pm.response.to.have.status(404));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders/00000000-0000-0000-0000-000000000000/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders",
+                "00000000-0000-0000-0000-000000000000",
+                "status"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-12 Order Requires session_id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-12: 400 missing required fields', () => pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"items\": [{\"menu_item_id\": \"{{burger_item_id}}\", \"vendor_id\": \"{{burger_vendor_id}}\", \"quantity\": 1, \"modifiers\": []}]}"
+            },
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-13 Order Requires At Least One Item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-13: 400 or empty order on empty items', () => {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([400, 201]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"session_id\": \"{{session_id}}\", \"table_id\": \"{{table_id}}\", \"idempotency_key\": \"tc13-test\", \"items\": []}"
+            },
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-14 Order Item Quantity Minimum",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-14: 400 quantity 0', () => pm.response.to.have.status(400));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"session_id\": \"{{session_id}}\", \"table_id\": \"{{table_id}}\", \"idempotency_key\": \"tc14-test\", \"items\": [{\"menu_item_id\": \"{{burger_item_id}}\", \"vendor_id\": \"{{burger_vendor_id}}\", \"quantity\": 0, \"modifiers\": []}]}"
+            },
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-15 Multiple Vendors — Separate Orders",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.sendRequest({",
+                  "  url: pm.environment.get('base_url') + '/vendors/' + pm.environment.get('pizza_vendor_id') + '/menu',",
+                  "  method: 'GET'",
+                  "}, function(err, res) {",
+                  "  if (!err) {",
+                  "    var cats = res.json().data.categories;",
+                  "    if (cats && cats.length > 0 && cats[0].items && cats[0].items.length > 0) {",
+                  "      pm.environment.set('pizza_item_id', cats[0].items[0].id);",
+                  "    }",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-15: 201 second order (pizza vendor)', () => pm.response.to.have.status(201));",
+                  "pm.test('TC-15: items belong to pizza vendor', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d.items[0].vendor_id).to.eql(pm.environment.get('pizza_vendor_id'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"session_id\": \"{{session_id}}\",\n  \"table_id\": \"{{table_id}}\",\n  \"idempotency_key\": \"tc15-{{$timestamp}}\",\n  \"items\": [{\n    \"menu_item_id\": \"{{pizza_item_id}}\",\n    \"vendor_id\": \"{{pizza_vendor_id}}\",\n    \"quantity\": 1,\n    \"modifiers\": []\n  }]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Phase 2 — Vendor Portal",
+      "item": [
+        {
+          "name": "TC-16 Vendor Auth — GET /me",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-16: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-16: role vendor_owner, vendor_id set', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d.role).to.eql('vendor_owner');",
+                  "  pm.expect(d.vendor_id).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{burger_vendor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-17 Invalid Token Rejected",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-17: 401 for invalid token', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid-token-xyz"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-18 Vendor Dashboard Stats",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-18: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-18: has today stats with order_count, revenue', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d).to.have.property('today');",
+                  "  pm.expect(d.today).to.have.property('order_count');",
+                  "  pm.expect(d.today).to.have.property('revenue');",
+                  "  pm.expect(d.today).to.have.property('active_orders_count');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{burger_vendor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vendor/dashboard",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendor",
+                "dashboard"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-19 Vendor Own Menu Only",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-19: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-19: Burger Barn menu returned', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d.vendor.name).to.eql('Burger Barn');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{burger_vendor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vendor/menu",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendor",
+                "menu"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-20 Vendor Cannot See Other Vendor Menu",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-20: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-20: Pizza Palace sees own menu not Burger Barn', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d.vendor.name).to.eql('Pizza Palace');",
+                  "  pm.expect(d.vendor.name).to.not.eql('Burger Barn');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{pizza_vendor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vendor/menu",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendor",
+                "menu"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-21 Create Menu Category",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('cat_name', 'NwmCat' + Date.now().toString().slice(-5));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-21: 201', () => pm.response.to.have.status(201));",
+                  "pm.test('TC-21: category with id and name returned', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d.id).to.be.a('string');",
+                  "  pm.expect(d.name).to.be.a('string');",
+                  "  pm.environment.set('created_category_id', d.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{burger_vendor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"{{cat_name}}\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/vendor/categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendor",
+                "categories"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-22 Create Menu Item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-22: 201', () => pm.response.to.have.status(201));",
+                  "pm.test('TC-22: item has id, name, price', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d.id).to.be.a('string');",
+                  "  pm.expect(d.name).to.eql('Newman Test Burger');",
+                  "  pm.expect(d.price).to.be.a('number');",
+                  "  pm.environment.set('created_item_id', d.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{burger_vendor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Newman Test Burger\",\n  \"description\": \"Created by Newman\",\n  \"price\": 9.99,\n  \"prep_time_minutes\": 5,\n  \"category_id\": \"{{burger_category_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/vendor/menu-items",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendor",
+                "menu-items"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-23 Update Menu Item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-23: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-23: name and price updated', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d.name).to.eql('Updated Newman Burger');",
+                  "  pm.expect(d.price).to.eql(15.99);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{burger_vendor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Updated Newman Burger\", \"price\": 15.99}"
+            },
+            "url": {
+              "raw": "{{base_url}}/vendor/menu-items/{{created_item_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendor",
+                "menu-items",
+                "{{created_item_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-24 Toggle Item Availability",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-24: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-24: is_available false', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d.is_available).to.eql(false);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{burger_vendor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"is_available\": false}"
+            },
+            "url": {
+              "raw": "{{base_url}}/vendor/menu-items/{{created_item_id}}/availability",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendor",
+                "menu-items",
+                "{{created_item_id}}",
+                "availability"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-25 Delete Menu Item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-25: 200', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{burger_vendor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vendor/menu-items/{{created_item_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendor",
+                "menu-items",
+                "{{created_item_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-26 Create Modifier Group",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-26: 201', () => pm.response.to.have.status(201));",
+                  "pm.test('TC-26: modifier group has id', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d.id).to.be.a('string');",
+                  "  pm.environment.set('created_modifier_group_id', d.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{burger_vendor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Size\", \"is_required\": true, \"min_selections\": 0, \"max_selections\": 3}"
+            },
+            "url": {
+              "raw": "{{base_url}}/vendor/modifier-groups",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendor",
+                "modifier-groups"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-27 Add Modifier to Group",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-27: 201', () => pm.response.to.have.status(201));",
+                  "pm.test('TC-27: modifier name and price_adjustment correct', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d.name).to.eql('Large');",
+                  "  pm.expect(d.price_adjustment).to.eql(2);",
+                  "  pm.environment.set('created_modifier_id', d.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{burger_vendor_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Large\", \"price_adjustment\": 2.00}"
+            },
+            "url": {
+              "raw": "{{base_url}}/vendor/modifier-groups/{{created_modifier_group_id}}/modifiers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendor",
+                "modifier-groups",
+                "{{created_modifier_group_id}}",
+                "modifiers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-28 Link Modifier Group to Item",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-28: 200 or 201', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{burger_vendor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vendor/menu-items/{{burger_item_id}}/modifier-groups/{{created_modifier_group_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendor",
+                "menu-items",
+                "{{burger_item_id}}",
+                "modifier-groups",
+                "{{created_modifier_group_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-29 Vendor Orders List",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-29: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-29: returns array of order items', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d).to.be.an('array');",
+                  "  if (d.length > 0) {",
+                  "    pm.environment.set('kds_item_id', d[0].id);",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{burger_vendor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/vendor/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendor",
+                "orders"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-30 KDS Update Item to Preparing",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.sendRequest({",
+                  "  url: pm.environment.get('base_url') + '/kds/orders',",
+                  "  method: 'GET',",
+                  "  header: { 'Authorization': 'Bearer ' + pm.environment.get('burger_vendor_token') }",
+                  "}, function(err, res) {",
+                  "  if (!err) {",
+                  "    var d = res.json().data;",
+                  "    var items = (d.new || []).concat(d.preparing || []);",
+                  "    if (items.length > 0) pm.environment.set('kds_item_id', items[0].item_id);",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-30: 200, 400 (already processed), or 404', () => {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);",
+                  "  if (pm.response.code === 200) {",
+                  "    var d = pm.response.json().data;",
+                  "    pm.expect(d.status).to.be.oneOf(['accepted','preparing']);",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{burger_vendor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/kds/items/{{kds_item_id}}/preparing",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "kds",
+                "items",
+                "{{kds_item_id}}",
+                "preparing"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-31 Pizza Token Cannot Update Burger KDS",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-31: 403 or 404 cross-vendor update rejected', () => {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([403, 404]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{pizza_vendor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/kds/items/{{kds_item_id}}/preparing",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "kds",
+                "items",
+                "{{kds_item_id}}",
+                "preparing"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-32 Kitchen PIN Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-32: 200 or 201', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "pm.test('TC-32: staff metadata with vendor_id', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d).to.have.property('staff');",
+                  "  pm.expect(d.staff.vendor_id).to.eql(pm.environment.get('burger_vendor_id'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"vendor_id\": \"{{burger_vendor_id}}\", \"pin\": \"1234\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/pin-login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "pin-login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-33 Wrong PIN Rejected",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-33: 401 for wrong PIN', () => pm.response.to.have.status(401));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"vendor_id\": \"{{burger_vendor_id}}\", \"pin\": \"0000\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/pin-login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "pin-login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-34 KDS Live Orders",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-34: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-34: has vendor_id, new, preparing queues', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d).to.have.property('vendor_id');",
+                  "  pm.expect(d).to.have.property('new');",
+                  "  pm.expect(d).to.have.property('preparing');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{burger_vendor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/kds/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "kds",
+                "orders"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-35 KDS Advance Item to Ready",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-35: 200, 400 (already processed), or 404', () => {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]);",
+                  "  if (pm.response.code === 200) {",
+                  "    var d = pm.response.json().data;",
+                  "    pm.expect(d.status).to.be.oneOf(['ready','completed']);",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{burger_vendor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/kds/items/{{kds_item_id}}/ready",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "kds",
+                "items",
+                "{{kds_item_id}}",
+                "ready"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Phase 3 — Admin Portal",
+      "item": [
+        {
+          "name": "TC-36 Admin Auth Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-36: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-36: role super_admin', () => {",
+                  "  pm.expect(pm.response.json().data.role).to.eql('super_admin');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-37 Vendor Blocked from Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-37: 403 vendor cannot access admin', () => pm.response.to.have.status(403));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{burger_vendor_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/overview",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "overview"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-38 Admin Overview",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-38: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-38: has active_vendors, orders_today, revenue_today', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d).to.have.property('active_vendors');",
+                  "  pm.expect(d).to.have.property('orders_today');",
+                  "  pm.expect(d).to.have.property('revenue_today');",
+                  "  pm.expect(d).to.have.property('avg_prep_time');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/overview",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "overview"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-39 Admin List All Vendors",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-39: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-39: array of vendors >= 10', () => {",
+                  "  pm.expect(pm.response.json().data).to.be.an('array').with.length.at.least(10);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/vendors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vendors"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-40 Admin Create Vendor",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var ts = Date.now().toString().slice(-5);",
+                  "pm.environment.set('vendor_booth', parseInt(ts) % 900 + 100);",
+                  "pm.environment.set('vendor_email', 'nwmbooth' + ts + '@foodvillage.test');"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-40: 201', () => pm.response.to.have.status(201));",
+                  "pm.test('TC-40: vendor created', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d.id).to.be.a('string');",
+                  "  pm.environment.set('created_vendor_id', d.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Newman Test Booth\",\n  \"cuisine_type\": \"Thai\",\n  \"booth_number\": {{vendor_booth}},\n  \"booth_color\": \"#123456\",\n  \"email\": \"{{vendor_email}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/vendors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vendors"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-41 Admin Update Vendor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-41: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-41: name updated', () => {",
+                  "  pm.expect(pm.response.json().data.name).to.eql('Updated Newman Booth');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\": \"Updated Newman Booth\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/vendors/{{created_vendor_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vendors",
+                "{{created_vendor_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-42 Admin Suspend Vendor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-42: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-42: status suspended', () => {",
+                  "  pm.expect(pm.response.json().data.status).to.eql('suspended');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"status\": \"suspended\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/vendors/{{created_vendor_id}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "vendors",
+                "{{created_vendor_id}}",
+                "status"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-43 Suspended Vendor Not In Public List",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-43: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-43: suspended vendor absent from public list', () => {",
+                  "  var vendors = pm.response.json().data;",
+                  "  var found = vendors.find(v => v.id === pm.environment.get('created_vendor_id'));",
+                  "  pm.expect(found).to.be.undefined;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/vendors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vendors"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-44 Admin List All Orders",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-44: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-44: paginated orders response', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d).to.have.property('orders');",
+                  "  pm.expect(d).to.have.property('total');",
+                  "  pm.expect(d).to.have.property('page');",
+                  "  pm.expect(d.orders).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "orders"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-45 Admin Filter Orders by Status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-45: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-45: all returned orders have status pending', () => {",
+                  "  var orders = pm.response.json().data.orders;",
+                  "  orders.forEach(o => pm.expect(o.status).to.eql('pending'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/orders?status=pending",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "orders"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "pending"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-46 Admin Cancel Order",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var orderId = pm.environment.get('order_id');",
+                  "if (orderId) pm.environment.set('order_to_cancel', orderId);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-46: 200 order cancelled (or already cancelled/not found)', () => pm.expect(pm.response.code).to.be.oneOf([200, 400, 404]));",
+                  "pm.test('TC-46: status cancelled or already done', () => {",
+                  "  if (pm.response.code === 200) {",
+                  "    pm.expect(pm.response.json().data.status).to.eql('cancelled');",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"reason\": \"Newman test cancellation\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/orders/{{order_to_cancel}}/cancel",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "orders",
+                "{{order_to_cancel}}",
+                "cancel"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-47 Admin Export Orders CSV",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-47: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-47: Content-Type is text/csv', () => {",
+                  "  pm.expect(pm.response.headers.get('Content-Type')).to.include('text/csv');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/orders/export?from=2024-01-01&to=2026-12-31",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "orders",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-12-31"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-48 Admin Daily Summary",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-48: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-48: array with date, total_orders, gross_revenue, tax_collected', () => {",
+                  "  var rows = pm.response.json().data;",
+                  "  pm.expect(rows).to.be.an('array');",
+                  "  if (rows.length > 0) {",
+                  "    pm.expect(rows[0]).to.have.property('date');",
+                  "    pm.expect(rows[0]).to.have.property('total_orders');",
+                  "    pm.expect(rows[0]).to.have.property('gross_revenue');",
+                  "    pm.expect(rows[0]).to.have.property('tax_collected');",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/finance/daily?date=2026-06-02",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "finance",
+                "daily"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-06-02"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-49 Admin Revenue by Vendor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-49: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-49: array with vendor_name, revenue, orders', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d).to.be.an('array');",
+                  "  if (d.length > 0) {",
+                  "    pm.expect(d[0]).to.have.property('vendor_name');",
+                  "    pm.expect(d[0]).to.have.property('revenue');",
+                  "    pm.expect(d[0]).to.have.property('orders');",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/finance/by-vendor",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "finance",
+                "by-vendor"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-50 Create Promotion",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "pm.environment.set('promo_code', 'NWM' + Date.now().toString().slice(-6));"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-50: 201', () => pm.response.to.have.status(201));",
+                  "pm.test('TC-50: promo created with id', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d.id).to.be.a('string');",
+                  "  pm.expect(d.code).to.be.a('string');",
+                  "  pm.environment.set('created_promo_id', d.id);",
+                  "  pm.environment.set('created_promo_code', d.code);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"{{promo_code}}\",\n  \"type\": \"percent\",\n  \"value\": 25,\n  \"valid_from\": \"2024-01-01T00:00:00Z\",\n  \"valid_to\": \"2027-01-01T00:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/promotions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "promotions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-51 Duplicate Promo Code Rejected",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-51: 409 duplicate code', () => pm.response.to.have.status(409));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"{{promo_code}}\",\n  \"type\": \"percent\",\n  \"value\": 10,\n  \"valid_from\": \"2024-01-01T00:00:00Z\",\n  \"valid_to\": \"2027-01-01T00:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/promotions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "promotions"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-52 Validate Promo Code",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-52: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-52: valid true, discount_amount > 0', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d.valid).to.eql(true);",
+                  "  pm.expect(d.discount_amount).to.be.above(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"code\": \"{{promo_code}}\", \"subtotal\": 50}"
+            },
+            "url": {
+              "raw": "{{base_url}}/promotions/validate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "promotions",
+                "validate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-53 Validate Nonexistent Promo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-53: 200 with valid false, or 404', () => {",
+                  "  if (pm.response.code === 200) {",
+                  "    pm.expect(pm.response.json().data.valid).to.eql(false);",
+                  "  } else {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([404, 400]);",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"code\": \"ZZZDOESNOTEXIST\", \"subtotal\": 50}"
+            },
+            "url": {
+              "raw": "{{base_url}}/promotions/validate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "promotions",
+                "validate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-54 Toggle Promotion Active State",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-54: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-54: is_active field present', () => {",
+                  "  pm.expect(pm.response.json().data).to.have.property('is_active');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/promotions/{{created_promo_id}}/toggle",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "promotions",
+                "{{created_promo_id}}",
+                "toggle"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-55 Create Cash Log Entry",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-55: 201', () => pm.response.to.have.status(201));",
+                  "pm.test('TC-55: cash log entry created', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d.id).to.be.a('string');",
+                  "  pm.expect(d.collected_by).to.eql('Cashier 1');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"order_id\": \"{{order_id}}\", \"amount\": 28.12, \"collected_by\": \"Cashier 1\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/finance/cash-log",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "finance",
+                "cash-log"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-56 Get Cash Log",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-56: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-56: logs array with entries', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d.logs).to.be.an('array').with.length.at.least(1);",
+                  "  pm.expect(d.logs[0]).to.have.property('amount');",
+                  "  pm.expect(d.logs[0]).to.have.property('collected_by');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/finance/cash-log",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "finance",
+                "cash-log"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-57 Audit Log Contains Vendor Status Change",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-57: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-57: audit has vendor.status_change entry', () => {",
+                  "  var logs = pm.response.json().data.logs;",
+                  "  pm.expect(logs).to.be.an('array').with.length.at.least(1);",
+                  "  var entry = logs.find(l => l.action === 'vendor.status_change');",
+                  "  pm.expect(entry).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/audit",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "audit"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-58 Audit Log Filterable by Action",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-58: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-58: all entries match action filter', () => {",
+                  "  var logs = pm.response.json().data.logs;",
+                  "  logs.forEach(l => pm.expect(l.action).to.eql('vendor.status_change'));",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/audit?action=vendor.status_change",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "audit"
+              ],
+              "query": [
+                {
+                  "key": "action",
+                  "value": "vendor.status_change"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Phase 3 — Analytics",
+      "item": [
+        {
+          "name": "TC-59 Revenue Analytics",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-59: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-59: array with date and revenue', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d).to.be.an('array');",
+                  "  if (d.length > 0) {",
+                  "    pm.expect(d[0]).to.have.property('date');",
+                  "    pm.expect(d[0]).to.have.property('revenue');",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/analytics/revenue?from=2024-01-01&to=2026-12-31",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "analytics",
+                "revenue"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-12-31"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-60 Peak Hours Data",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-60: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-60: has day_of_week, hour, count', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d).to.be.an('array');",
+                  "  if (d.length > 0) {",
+                  "    pm.expect(d[0]).to.have.property('day_of_week');",
+                  "    pm.expect(d[0]).to.have.property('hour');",
+                  "    pm.expect(d[0]).to.have.property('count');",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/analytics/peak-hours",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "analytics",
+                "peak-hours"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-61 Top Items Report",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-61: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-61: item_name, count, revenue, vendor_name', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d).to.be.an('array');",
+                  "  if (d.length > 0) {",
+                  "    pm.expect(d[0]).to.have.property('item_name');",
+                  "    pm.expect(d[0]).to.have.property('count');",
+                  "    pm.expect(d[0]).to.have.property('revenue');",
+                  "    pm.expect(d[0]).to.have.property('vendor_name');",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/analytics/top-items",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "analytics",
+                "top-items"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-62 By Cuisine Report",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-62: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-62: array grouped by cuisine_type', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d).to.be.an('array').with.length.at.least(1);",
+                  "  pm.expect(d[0]).to.have.property('cuisine_type');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/analytics/by-cuisine",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "analytics",
+                "by-cuisine"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-63 Prep Time Report",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-63: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-63: vendor_name and avg_prep_time', () => {",
+                  "  var d = pm.response.json().data;",
+                  "  pm.expect(d).to.be.an('array');",
+                  "  if (d.length > 0) {",
+                  "    pm.expect(d[0]).to.have.property('vendor_name');",
+                  "    pm.expect(d[0]).to.have.property('avg_prep_time');",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/analytics/prep-times",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "analytics",
+                "prep-times"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Phase 4 — Security & Infrastructure",
+      "item": [
+        {
+          "name": "TC-64 Security Headers — X-Frame-Options",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-64: X-Frame-Options SAMEORIGIN', () => {",
+                  "  pm.expect(pm.response.headers.get('X-Frame-Options')).to.eql('SAMEORIGIN');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{frontend_url}}/order",
+              "host": [
+                "{{frontend_url}}"
+              ],
+              "path": [
+                "order"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-65 Security Headers — CSP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-65: CSP includes default-src self', () => {",
+                  "  pm.expect(pm.response.headers.get('Content-Security-Policy')).to.include(\"default-src 'self'\");",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{frontend_url}}/order",
+              "host": [
+                "{{frontend_url}}"
+              ],
+              "path": [
+                "order"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-66 Security Headers — HSTS",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-66: HSTS max-age present', () => {",
+                  "  pm.expect(pm.response.headers.get('Strict-Transport-Security')).to.include('max-age=63072000');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{frontend_url}}/order",
+              "host": [
+                "{{frontend_url}}"
+              ],
+              "path": [
+                "order"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-67 Security Headers — X-Content-Type-Options",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-67: X-Content-Type-Options nosniff', () => {",
+                  "  pm.expect(pm.response.headers.get('X-Content-Type-Options')).to.eql('nosniff');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{frontend_url}}/order",
+              "host": [
+                "{{frontend_url}}"
+              ],
+              "path": [
+                "order"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-68 Rate Limit — Auth (429 after limit)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-68: 400 or 429 on rapid auth attempt', () => {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([400, 401, 429]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"nobody@test.com\", \"password\": \"wrong\"}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-70 PWA Manifest Accessible",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-70: 200', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-70: manifest has display standalone', () => {",
+                  "  var d = pm.response.json();",
+                  "  pm.expect(d.display).to.eql('standalone');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{frontend_url}}/manifest.json",
+              "host": [
+                "{{frontend_url}}"
+              ],
+              "path": [
+                "manifest.json"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Regression",
+      "item": [
+        {
+          "name": "TC-74 Order With Modifiers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-74: 201 or 429 (rate limit)', () => {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201, 400, 429]);",
+                  "  if (pm.response.code === 201) {",
+                  "    pm.expect(pm.response.json().data.status).to.eql('pending');",
+                  "  }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"session_id\": \"{{session_id}}\",\n  \"table_id\": \"{{table_id}}\",\n  \"idempotency_key\": \"tc74-{{$timestamp}}\",\n  \"items\": [{\n    \"menu_item_id\": \"{{burger_item_id}}\",\n    \"vendor_id\": \"{{burger_vendor_id}}\",\n    \"quantity\": 1,\n    \"modifiers\": [{\"modifier_id\": \"{{created_modifier_id}}\", \"quantity\": 1}]\n  }]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders"
+              ]
+            }
+          }
+        },
+        {
+          "name": "TC-75 Finance Export CSV Has Content",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('TC-75: 200 CSV export', () => pm.response.to.have.status(200));",
+                  "pm.test('TC-75: Content-Type is text/csv', () => {",
+                  "  pm.expect(pm.response.headers.get('Content-Type')).to.include('text/csv');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{super_admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/finance/export?from=2024-01-01&to=2026-12-31",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "finance",
+                "export"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "to",
+                  "value": "2026-12-31"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

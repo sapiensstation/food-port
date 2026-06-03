@@ -75,6 +75,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], OrdersController.prototype, "cancel", null);
 exports.OrdersController = OrdersController = __decorate([
+    (0, throttler_1.SkipThrottle)({ auth: true, order: true }),
     (0, swagger_1.ApiTags)('Orders'),
     (0, common_1.Controller)('orders'),
     __metadata("design:paramtypes", [orders_service_1.OrdersService])

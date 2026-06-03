@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DisplayController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const throttler_1 = require("@nestjs/throttler");
 const orders_service_1 = require("./orders.service");
 const Public = () => (0, common_1.SetMetadata)('isPublic', true);
 let DisplayController = class DisplayController {
@@ -31,6 +32,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], DisplayController.prototype, "getBoard", null);
 exports.DisplayController = DisplayController = __decorate([
+    (0, throttler_1.SkipThrottle)({ auth: true, order: true }),
     (0, swagger_1.ApiTags)('Display Board'),
     (0, common_1.Controller)('display'),
     __metadata("design:paramtypes", [orders_service_1.OrdersService])

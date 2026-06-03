@@ -14,6 +14,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PromotionsPublicController = exports.HealthController = exports.AdminController = void 0;
 const common_1 = require("@nestjs/common");
+const throttler_1 = require("@nestjs/throttler");
 const swagger_1 = require("@nestjs/swagger");
 const admin_service_1 = require("./admin.service");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
@@ -438,6 +439,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AdminController.prototype, "getAuditLog", null);
 exports.AdminController = AdminController = __decorate([
+    (0, throttler_1.SkipThrottle)({ auth: true, order: true }),
     (0, swagger_1.ApiTags)('Admin'),
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
@@ -454,12 +456,14 @@ let HealthController = class HealthController {
 };
 exports.HealthController = HealthController;
 __decorate([
+    (0, common_1.SetMetadata)('isPublic', true),
     (0, common_1.Get)(),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", void 0)
 ], HealthController.prototype, "getHealth", null);
 exports.HealthController = HealthController = __decorate([
+    (0, throttler_1.SkipThrottle)({ auth: true, order: true }),
     (0, common_1.Controller)('health'),
     __metadata("design:paramtypes", [admin_service_1.AdminService])
 ], HealthController);
@@ -481,6 +485,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], PromotionsPublicController.prototype, "validatePromo", null);
 exports.PromotionsPublicController = PromotionsPublicController = __decorate([
+    (0, throttler_1.SkipThrottle)({ auth: true, order: true }),
     (0, common_1.Controller)('promotions'),
     __metadata("design:paramtypes", [admin_service_1.AdminService])
 ], PromotionsPublicController);

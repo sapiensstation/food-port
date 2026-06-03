@@ -124,8 +124,8 @@ export declare class VendorController {
                     price_adjustment: number;
                 }[];
             } & {
-                vendor_id: string;
                 id: string;
+                vendor_id: string;
                 is_active: boolean;
                 created_at: Date;
                 updated_at: Date;
@@ -139,8 +139,8 @@ export declare class VendorController {
             modifier_group_id: string;
         })[];
     } & {
-        vendor_id: string;
         id: string;
+        vendor_id: string;
         created_at: Date;
         updated_at: Date;
         name: string;
@@ -172,8 +172,8 @@ export declare class VendorController {
                     price_adjustment: number;
                 }[];
             } & {
-                vendor_id: string;
                 id: string;
+                vendor_id: string;
                 is_active: boolean;
                 created_at: Date;
                 updated_at: Date;
@@ -187,8 +187,8 @@ export declare class VendorController {
             modifier_group_id: string;
         })[];
     } & {
-        vendor_id: string;
         id: string;
+        vendor_id: string;
         created_at: Date;
         updated_at: Date;
         name: string;
@@ -208,8 +208,8 @@ export declare class VendorController {
         success: boolean;
     }>;
     updateAvailability(user: JwtUser, id: string, dto: UpdateAvailabilityDto): Promise<{
-        vendor_id: string;
         id: string;
+        vendor_id: string;
         created_at: Date;
         updated_at: Date;
         name: string;
@@ -233,8 +233,8 @@ export declare class VendorController {
         item_count: number;
     }[]>;
     createCategory(user: JwtUser, dto: CreateCategoryDto): Promise<{
-        vendor_id: string;
         id: string;
+        vendor_id: string;
         is_active: boolean;
         created_at: Date;
         updated_at: Date;
@@ -243,8 +243,8 @@ export declare class VendorController {
         sort_order: number;
     }>;
     updateCategory(user: JwtUser, id: string, dto: UpdateCategoryDto): Promise<{
-        vendor_id: string;
         id: string;
+        vendor_id: string;
         is_active: boolean;
         created_at: Date;
         updated_at: Date;
@@ -263,8 +263,8 @@ export declare class VendorController {
             price_adjustment: number;
         }[];
     } & {
-        vendor_id: string;
         id: string;
+        vendor_id: string;
         is_active: boolean;
         created_at: Date;
         updated_at: Date;
@@ -284,8 +284,8 @@ export declare class VendorController {
             price_adjustment: number;
         }[];
     } & {
-        vendor_id: string;
         id: string;
+        vendor_id: string;
         is_active: boolean;
         created_at: Date;
         updated_at: Date;

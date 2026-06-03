@@ -18,11 +18,11 @@ function WelcomeContent() {
   async function handleStart() {
     setLoading(true);
     try {
-      const res = await apiPost<{ session_id: string; table_number: string }>(
+      const res = await apiPost<{ id: string; table_number: number }>(
         '/sessions',
         { table_id: tableId },
       );
-      setSession(res.session_id, tableId, res.table_number);
+      setSession(res.id, tableId, String(res.table_number));
     } catch {
       /* continue without session */
     } finally {

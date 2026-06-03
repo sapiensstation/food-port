@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MenuController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
+const throttler_1 = require("@nestjs/throttler");
 const menu_service_1 = require("./menu.service");
 const Public = () => (0, common_1.SetMetadata)('isPublic', true);
 let MenuController = class MenuController {
@@ -72,6 +73,7 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], MenuController.prototype, "getMenuItemDetail", null);
 exports.MenuController = MenuController = __decorate([
+    (0, throttler_1.SkipThrottle)({ auth: true, order: true }),
     (0, swagger_1.ApiTags)('Menu'),
     (0, common_1.Controller)(),
     __metadata("design:paramtypes", [menu_service_1.MenuService])
