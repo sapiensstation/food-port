@@ -188,9 +188,9 @@ let OrdersService = class OrdersService {
             newStatus = 'confirmed';
         await this.prisma.order.update({ where: { id: orderId }, data: { status: newStatus } });
     }
-    async getDisplayBoard() {
+    async getDisplayBoard(vendorId) {
         const items = await this.prisma.orderItem.findMany({
-            where: { status: { in: ['preparing', 'ready'] } },
+            where: { status: { in: ['preparing', 'ready'] }, ...(vendorId ? { vendor_id: vendorId } : {}) },
             include: {
                 order: { select: { token_number: true } },
                 vendor: { select: { id: true, name: true, booth_color: true, logo_url: true } },

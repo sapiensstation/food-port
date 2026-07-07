@@ -34,7 +34,10 @@ let OrdersController = class OrdersController {
         return this.ordersService.getStatus(orderId);
     }
     findByToken(token) {
-        return this.ordersService.findByToken(parseInt(token, 10));
+        const n = parseInt(token, 10);
+        if (isNaN(n))
+            throw new common_1.BadRequestException('Token must be a number');
+        return this.ordersService.findByToken(n);
     }
     cancel(orderId, body) {
         return this.ordersService.cancel(orderId, body.reason);

@@ -94,9 +94,10 @@ export class AdminController {
   async exportOrders(
     @Query('from') from: string | undefined,
     @Query('to') to: string | undefined,
+    @Query('status') status: string | undefined,
     @Res() res: Response,
   ) {
-    const csv = await this.adminService.exportOrders(from, to);
+    const csv = await this.adminService.exportOrders(from, to, status);
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', `attachment; filename="orders-${Date.now()}.csv"`);
     res.send(csv);

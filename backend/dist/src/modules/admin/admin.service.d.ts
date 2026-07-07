@@ -200,7 +200,7 @@ export declare class AdminService {
         id: string;
         status: string;
     }>;
-    exportOrders(from?: string, to?: string): Promise<string>;
+    exportOrders(from?: string, to?: string, status?: string): Promise<string>;
     getVendors(status?: string, page?: number, limit?: number): Promise<{
         id: string;
         name: string;

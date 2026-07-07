@@ -62,7 +62,7 @@ export declare class AdminController {
         revenue: number;
         cuisine_type: string;
     }[]>;
-    exportOrders(from: string | undefined, to: string | undefined, res: Response): Promise<void>;
+    exportOrders(from: string | undefined, to: string | undefined, status: string | undefined, res: Response): Promise<void>;
     getOrders(from?: string, to?: string, status?: string, vendorId?: string, page?: string, limit?: string): Promise<{
         orders: {
             id: string;

@@ -132,7 +132,10 @@ Base: `/api/orders` · Tag: `Orders`
 | POST | `/api/orders` | Public, throttled (30/min) | `CreateOrderDto` — `session_id, table_id, waiter_id?, idempotency_key, items[]` | Place order (idempotent via `idempotency_key`) |
 | GET | `/api/orders/:orderId` | Bearer | — | Full order detail |
 | GET | `/api/orders/:orderId/status` | Public | — | Order status (customer tracking page) |
+| GET | `/api/orders/by-token/:token` | Public | — | Find order by numeric pickup token |
 | PATCH | `/api/orders/:orderId/cancel` | Bearer | `{ reason? }` | Cancel order |
+| POST | `/api/orders/:orderId/rate` | Public | `rating` (1-5, `@Body('rating')`), `comment?` (untyped inline body) | Rate a completed order |
+| GET | `/api/orders/:orderId/rating` | Public | — | Get order rating |
 
 `CartItemDto`: `{ menu_item_id, vendor_id, quantity (≥1), modifiers: [{ modifier_id, quantity }], special_instructions? (≤200 chars) }`
 
@@ -162,14 +165,16 @@ Base: `/api/vendor` · Tag: `Vendor` · Roles: `vendor_owner, vendor_kitchen, ve
 
 | Method | Path | Roles | Body | Description |
 |---|---|---|---|---|
+| GET | `/api/vendor/revenue/weekly` | default | — | Weekly revenue |
 | GET | `/api/vendor/dashboard` | default | — | Vendor dashboard summary |
 | GET | `/api/vendor/orders` | default | query: `from?, to?, status?, page?, limit?` | List own orders |
-| GET | `/api/vendor/orders/:orderId` | default | — | ⚠️ **stub**, returns `{ orderId }` only — not wired up |
+| GET | `/api/vendor/orders/:orderId` | default | — | Order detail, scoped to vendor's items |
 | GET | `/api/vendor/menu` | default | — | Full menu (categories + items + modifiers) |
 | GET | `/api/vendor/menu-items` | default | query: `category?, available?` | List menu items |
-| POST | `/api/vendor/menu-items` | owner/admin | `CreateMenuItemDto` | Create item |
+| POST | `/api/vendor/menu-items` | owner/admin | `CreateMenuItemDto` (incl. `modifier_group_ids?`) | Create item |
 | PUT | `/api/vendor/menu-items/:id` | owner/admin | `UpdateMenuItemDto` | Update item |
 | DELETE | `/api/vendor/menu-items/:id` | owner/admin | — | Delete item |
+| POST | `/api/vendor/menu-items/:id/duplicate` | owner/admin | — | Duplicate menu item |
 | PATCH | `/api/vendor/menu-items/:id/availability` | default | `{ is_available }` | Toggle availability |
 | GET | `/api/vendor/categories` | default | — | List categories |
 | POST | `/api/vendor/categories` | owner/admin | `{ name, sort_order? }` | Create category |
@@ -184,8 +189,16 @@ Base: `/api/vendor` · Tag: `Vendor` · Roles: `vendor_owner, vendor_kitchen, ve
 | POST | `/api/vendor/menu-items/:itemId/modifier-groups/:groupId` | owner/admin | — | Link group to item |
 | DELETE | `/api/vendor/menu-items/:itemId/modifier-groups/:groupId` | owner/admin | — | Unlink group from item |
 | GET | `/api/vendor/settings` | default | — | Get settings |
-| PUT | `/api/vendor/settings` | owner/admin | `UpdateVendorSettingsDto` | Update settings |
-| PATCH | `/api/vendor/status` | default | `UpdateVendorStatusDto` | Set own online/offline status |
+| PUT | `/api/vendor/settings` | owner/admin | `UpdateVendorSettingsDto { name?, cuisine_type?, booth_color?, avg_prep_time_minutes?, operating_hours? (per-day open/close/is_closed), notification_preferences? ({new_order_sound?, volume?}), logo_url? }` | Update settings |
+| PATCH | `/api/vendor/status` | default | `{ is_accepting_orders: boolean }` | Set own online/offline status |
+| GET | `/api/vendor/staff-pins` | owner/admin | — | List staff PINs |
+| POST | `/api/vendor/staff-pins` | owner/admin | `{ label, pin }` (untyped inline) | Create staff PIN |
+| PATCH | `/api/vendor/staff-pins/:id/toggle` | owner/admin | `{ is_active }` (untyped inline) | Toggle staff PIN active state |
+| DELETE | `/api/vendor/staff-pins/:id` | owner/admin | — | Delete staff PIN |
+| GET | `/api/vendor/payout/summary` | default | — | Payout summary |
+| GET | `/api/vendor/reports/sales` | default | query: `from?, to?` | Sales report |
+| GET | `/api/vendor/reports/top-items` | default | query: `from?, to?, limit?` (default 10) | Top items report |
+| GET | `/api/vendor/reports/peak-hours` | default | query: `from?, to?` | Peak hours report |
 
 ### Vendor Operations (finance/feedback for vendor staff)
 
@@ -215,7 +228,7 @@ Base: `/api/admin` · Tag: `Admin` · Roles: `super_admin, admin` (all routes)
 | GET | `/api/admin/analytics/top-items` | `from?, to?, vendor_id?, limit?` | Top-selling items |
 | GET | `/api/admin/analytics/prep-times` | `from?, to?, vendor_id?` | Prep-time report |
 | GET | `/api/admin/analytics/by-cuisine` | `from?, to?` | Sales by cuisine |
-| GET | `/api/admin/orders/export` | `from?, to?` | CSV export of orders |
+| GET | `/api/admin/orders/export` | `from?, to?, status?` | CSV export of orders |
 | GET | `/api/admin/orders` | `from?, to?, status?, vendor_id?, page?, limit?` | Search/list orders |
 | GET | `/api/admin/orders/:id` | — | Order detail |
 | PATCH | `/api/admin/orders/:id/status` | `{ status, reason? }` | Override order status |
@@ -226,10 +239,17 @@ Base: `/api/admin` · Tag: `Admin` · Roles: `super_admin, admin` (all routes)
 | PATCH | `/api/admin/vendors/:id/status` | `{ status: online\|offline\|suspended }` | Set vendor status |
 | DELETE | `/api/admin/vendors/:id` | — | Delete vendor |
 | GET | `/api/admin/vendors/:id/staff` | — | List vendor staff |
+| POST | `/api/admin/vendors/:id/staff` | `CreateStaffDto { name, email, role: vendor_owner\|vendor_kitchen\|vendor_cashier\|waiter, pin? }` | Create staff for a vendor |
 | DELETE | `/api/admin/vendors/:vendorId/staff/:userId` | — | Remove staff member |
+| GET | `/api/admin/vendors/:id/detail` | — | Vendor detail view |
+| GET | `/api/admin/users` | `role?, page?, limit?` | List users |
+| POST | `/api/admin/users` | `CreateUserDto { full_name, email, password, role (any of 6 roles), vendor_id? }` | Create user — ⚠️ `password` has no `@MinLength`, weaker than login's 6-char minimum |
+| PUT | `/api/admin/users/:id` | `UpdateUserDto { full_name?, role?, is_active? }` | Update user |
+| GET | `/api/admin/settings` | — | Get system settings |
+| PUT | `/api/admin/settings` | `SystemSettingsDto { food_village_name?, tax_rate?, default_commission_rate?, currency?, timezone? }` | Update system settings — ⚠️ **`super_admin` only**, overrides the class default (`admin` cannot call this) |
 | GET | `/api/admin/finance/daily` | `from?, to?` | Daily finance summary |
 | GET | `/api/admin/finance/by-vendor` | `from?, to?` | Revenue by vendor |
-| GET | `/api/admin/finance/cash-log` | `date?, page?, limit?` | Cash log |
+| GET | `/api/admin/finance/cash-log` | `date?, page?, limit?, from?, to?` | Cash log |
 | POST | `/api/admin/finance/cash-log` | `{ order_id, amount, collected_by, notes? }` | Record cash log |
 | GET | `/api/admin/finance/export` | `from?, to?` | CSV finance export |
 | GET | `/api/admin/promotions` | `active?, page?, limit?` | List promotions |
@@ -261,10 +281,12 @@ Base: `/api/promotions` (public, separate from admin) · Tag: `Admin`
 
 ## Known issues / TODOs
 
-- **`GET /api/vendor/orders/:orderId` is a stub** — returns `{ orderId }` only, not implemented.
-- **Duplicate promo validation**: `POST /api/promotions/validate` (DTO-validated) vs `POST /api/promos/validate` (untyped inline body). Pick one, deprecate the other.
+- **Duplicate promo validation**: `POST /api/promotions/validate` (DTO-validated, no guard at all — public by omission not by `@Public`) vs `POST /api/promos/validate` (untyped inline body, `@Public` metadata). Pick one, deprecate the other.
+- **Untyped inline bodies spread beyond promos**: `PATCH /api/vendor/categories/:id/bulk-availability`, `POST /api/vendor/staff-pins`, `PATCH /api/vendor/staff-pins/:id/toggle`, `POST /api/orders/:orderId/rate` all use `@Body('field')` instead of a class-validator DTO — no `whitelist`/`forbidNonWhitelisted` protection on these fields.
+- **`CreateUserDto.password` has no `@MinLength`** — admin-created users can get weaker passwords than self-service login enforces (6 chars).
 - **`Public()` decorator duplicated per-controller** instead of shared import — harmless but worth consolidating.
 - **Logout is stateless** — no server-side token revocation/blacklist; relies on client discarding the token.
+- **Role asymmetry**: `PUT /api/admin/settings` requires `super_admin` specifically — every other `/api/admin/*` route accepts plain `admin` too. Easy to miss when adding new admin UI.
 
 ## Environment variables
 

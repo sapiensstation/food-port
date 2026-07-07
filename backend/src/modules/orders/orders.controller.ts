@@ -36,7 +36,9 @@ export class OrdersController {
   @Public()
   @Get('by-token/:token')
   findByToken(@Param('token') token: string) {
-    return this.ordersService.findByToken(parseInt(token, 10));
+    const n = parseInt(token, 10);
+    if (isNaN(n)) throw new BadRequestException('Token must be a number');
+    return this.ordersService.findByToken(n);
   }
 
   @ApiBearerAuth()

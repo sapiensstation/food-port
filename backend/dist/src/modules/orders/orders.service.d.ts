@@ -134,7 +134,7 @@ export declare class OrdersService {
         updated_at: string;
     }>;
     syncOrderStatus(orderId: string): Promise<void>;
-    getDisplayBoard(): Promise<{
+    getDisplayBoard(vendorId?: string): Promise<{
         food_village_name: string;
         vendors: {
             vendor_id: string;

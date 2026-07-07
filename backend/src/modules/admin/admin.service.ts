@@ -322,8 +322,8 @@ export class AdminService {
     return { id, status: 'cancelled' };
   }
 
-  async exportOrders(from?: string, to?: string) {
-    const { orders } = await this.getOrders(from, to, undefined, undefined, 1, 10000);
+  async exportOrders(from?: string, to?: string, status?: string) {
+    const { orders } = await this.getOrders(from, to, status, undefined, 1, 10000);
     const header = 'token,table,status,subtotal,tax,total,items,created_at\n';
     const rows = orders.map((o) =>
       `${o.token_number},${o.table_number},${o.status},${o.subtotal.toFixed(2)},${(o.tax ?? 0).toFixed(2)},${o.total.toFixed(2)},${o.item_count},"${o.created_at}"`
@@ -567,6 +567,8 @@ export class AdminService {
   }
 
   async getPromotionStats(id: string) {
+    const promo = await this.prisma.promotion.findUnique({ where: { id } });
+    if (!promo) throw new NotFoundException('Promotion not found');
     const uses = await this.prisma.orderPromotion.findMany({
       where: { promotion_id: id },
       include: { order: { select: { token_number: true, total: true, created_at: true } } },

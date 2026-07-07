@@ -2,7 +2,7 @@ import { OrdersService } from './orders.service';
 export declare class DisplayController {
     private ordersService;
     constructor(ordersService: OrdersService);
-    getBoard(): Promise<{
+    getBoard(vendorId?: string): Promise<{
         food_village_name: string;
         vendors: {
             vendor_id: string;

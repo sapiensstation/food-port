@@ -1,4 +1,4 @@
-import { Controller, Get, SetMetadata } from '@nestjs/common';
+import { Controller, Get, Query, SetMetadata } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { SkipThrottle } from '@nestjs/throttler';
 import { OrdersService } from './orders.service';
@@ -13,7 +13,7 @@ export class DisplayController {
 
   @Public()
   @Get('board')
-  getBoard() {
-    return this.ordersService.getDisplayBoard();
+  getBoard(@Query('vendor_id') vendorId?: string) {
+    return this.ordersService.getDisplayBoard(vendorId);
   }
 }

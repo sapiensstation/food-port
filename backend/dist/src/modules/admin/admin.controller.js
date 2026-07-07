@@ -50,8 +50,8 @@ let AdminController = class AdminController {
     getByCuisine(from, to) {
         return this.adminService.getByCuisine(from, to);
     }
-    async exportOrders(from, to, res) {
-        const csv = await this.adminService.exportOrders(from, to);
+    async exportOrders(from, to, status, res) {
+        const csv = await this.adminService.exportOrders(from, to, status);
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', `attachment; filename="orders-${Date.now()}.csv"`);
         res.send(csv);
@@ -231,9 +231,10 @@ __decorate([
     (0, roles_decorator_1.Roles)('super_admin', 'admin'),
     __param(0, (0, common_1.Query)('from')),
     __param(1, (0, common_1.Query)('to')),
-    __param(2, (0, common_1.Res)()),
+    __param(2, (0, common_1.Query)('status')),
+    __param(3, (0, common_1.Res)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, Object, Object]),
+    __metadata("design:paramtypes", [Object, Object, Object, Object]),
     __metadata("design:returntype", Promise)
 ], AdminController.prototype, "exportOrders", null);
 __decorate([
