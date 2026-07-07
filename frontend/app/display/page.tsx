@@ -24,8 +24,8 @@ export default function DisplayBoardPage() {
 
   async function fetchBoard() {
     try {
-      const data = await apiFetch<DisplayBoardVendor[]>('/display/board');
-      setVendors(data);
+      const data = await apiFetch<{ vendors: DisplayBoardVendor[] }>('/display/board');
+      setVendors(data.vendors);
       setOffline(false);
     } catch {
       setOffline(true);
