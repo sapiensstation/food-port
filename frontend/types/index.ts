@@ -114,6 +114,7 @@ export interface KDSOrder {
   status: OrderItemStatus;
   accepted_at: string | null;
   created_at: string;
+  estimated_prep_time_minutes: number | null;
 }
 
 export interface Session {
