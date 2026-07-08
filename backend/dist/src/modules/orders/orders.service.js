@@ -32,17 +32,21 @@ let OrdersService = class OrdersService {
         });
         if (existing)
             return this.formatOrder(existing);
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(dto.table_id);
-        const tableNumber = isUuid ? NaN : parseInt(dto.table_id, 10);
-        if (!isUuid && isNaN(tableNumber))
-            throw new common_1.NotFoundException('Table not found');
-        const table = await this.prisma.table.findFirst({
-            where: isUuid
-                ? { id: dto.table_id, is_active: true }
-                : { table_number: tableNumber, is_active: true },
-        });
-        if (!table)
-            throw new common_1.NotFoundException('Table not found');
+        let tableId = null;
+        if (dto.table_id) {
+            const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(dto.table_id);
+            const tableNumber = isUuid ? NaN : parseInt(dto.table_id, 10);
+            if (!isUuid && isNaN(tableNumber))
+                throw new common_1.NotFoundException('Table not found');
+            const table = await this.prisma.table.findFirst({
+                where: isUuid
+                    ? { id: dto.table_id, is_active: true }
+                    : { table_number: tableNumber, is_active: true },
+            });
+            if (!table)
+                throw new common_1.NotFoundException('Table not found');
+            tableId = table.id;
+        }
         const priced = await this.priceCartItems(dto.items);
         const subtotal = priced.reduce((sum, i) => sum + i.totalPrice, 0);
         const taxAmount = Math.round(subtotal * TAX_RATE * 100) / 100;
@@ -53,7 +57,7 @@ let OrdersService = class OrdersService {
             data: {
                 token_number: tokenNumber,
                 token_date: tokenDate,
-                table_id: table.id,
+                table_id: tableId,
                 session_id: dto.session_id,
                 waiter_id: dto.waiter_id ?? null,
                 idempotency_key: dto.idempotency_key,

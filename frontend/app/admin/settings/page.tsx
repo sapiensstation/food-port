@@ -95,7 +95,7 @@ export default function AdminSettingsPage() {
         <div>
           <label className="block text-xs font-semibold text-brand-chrome mb-2 uppercase tracking-wider">Font</label>
           <div className="flex gap-2">
-            {(['poppins', 'inter', 'manrope'] as FontChoice[]).map((f) => (
+            {(['poppins', 'inter'] as FontChoice[]).map((f) => (
               <button
                 key={f}
                 onClick={() => setFont(f)}

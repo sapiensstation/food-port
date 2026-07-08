@@ -5,9 +5,9 @@ export declare class SessionsService {
     constructor(prisma: PrismaService);
     create(dto: CreateSessionDto): Promise<{
         id: string;
-        table_id: string;
-        table_number: number;
-        table_label: string;
+        table_id: string | null;
+        table_number: number | null;
+        table_label: string | null;
         waiter_id: string | null;
         waiter_name: string | null;
         status: string;
@@ -16,9 +16,9 @@ export declare class SessionsService {
     }>;
     findOne(id: string): Promise<{
         id: string;
-        table_id: string;
-        table_number: number;
-        table_label: string;
+        table_id: string | null;
+        table_number: number | null;
+        table_label: string | null;
         waiter_id: string | null;
         waiter_name: string | null;
         status: string;
@@ -27,9 +27,9 @@ export declare class SessionsService {
     }>;
     close(id: string): Promise<{
         id: string;
-        table_id: string;
-        table_number: number;
-        table_label: string;
+        table_id: string | null;
+        table_number: number | null;
+        table_label: string | null;
         waiter_id: string | null;
         waiter_name: string | null;
         status: string;

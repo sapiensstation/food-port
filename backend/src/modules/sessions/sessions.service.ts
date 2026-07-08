@@ -7,20 +7,24 @@ export class SessionsService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateSessionDto) {
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(dto.table_id);
-    const table = await this.prisma.table.findFirst({
-      where: isUuid
-        ? { id: dto.table_id, is_active: true }
-        : { table_number: parseInt(dto.table_id, 10), is_active: true },
-    });
-    if (!table) throw new NotFoundException('Table not found');
+    let tableId: string | null = null;
+    if (dto.table_id) {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(dto.table_id);
+      const table = await this.prisma.table.findFirst({
+        where: isUuid
+          ? { id: dto.table_id, is_active: true }
+          : { table_number: parseInt(dto.table_id, 10), is_active: true },
+      });
+      if (!table) throw new NotFoundException('Table not found');
+      tableId = table.id;
+    }
 
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 4); // 4-hour session
 
     const session = await this.prisma.session.create({
       data: {
-        table_id: table.id,
+        table_id: tableId,
         waiter_id: dto.waiter_id ?? null,
         expires_at: expiresAt,
       },
@@ -59,8 +63,8 @@ export class SessionsService {
 
   private format(session: {
     id: string;
-    table_id: string;
-    table: { table_number: number; label: string };
+    table_id: string | null;
+    table: { table_number: number; label: string } | null;
     waiter_id: string | null;
     waiter: { full_name: string } | null;
     status: string;
@@ -70,8 +74,8 @@ export class SessionsService {
     return {
       id: session.id,
       table_id: session.table_id,
-      table_number: session.table.table_number,
-      table_label: session.table.label,
+      table_number: session.table?.table_number ?? null,
+      table_label: session.table?.label ?? null,
       waiter_id: session.waiter_id,
       waiter_name: session.waiter?.full_name ?? null,
       status: session.status,

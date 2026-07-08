@@ -53,7 +53,7 @@ export declare class AdminService {
         order_item_id: string;
         order_id: string;
         token_number: number;
-        table_number: string;
+        table_number: string | null;
         vendor_name: string;
         booth_color: string;
         item_name: string;
@@ -65,7 +65,7 @@ export declare class AdminService {
         orders: {
             id: string;
             token_number: number;
-            table_number: number;
+            table_number: number | null;
             status: import(".prisma/client").$Enums.OrderStatus;
             subtotal: number;
             tax: number;
@@ -78,8 +78,8 @@ export declare class AdminService {
                     booth_color: string;
                 };
                 status: import(".prisma/client").$Enums.OrderItemStatus;
-                quantity: number;
                 item_name: string;
+                quantity: number;
                 total_price: number;
             }[];
             created_at: Date;
@@ -91,7 +91,7 @@ export declare class AdminService {
     getOrder(id: string): Promise<{
         table: {
             table_number: number;
-        };
+        } | null;
         promotions: ({
             promotion: {
                 id: string;
@@ -123,9 +123,9 @@ export declare class AdminService {
             };
             modifiers: {
                 id: string;
-                modifier_id: string;
                 quantity: number;
                 order_item_id: string;
+                modifier_id: string;
                 modifier_name: string;
                 price_at_order: number;
             }[];
@@ -136,13 +136,13 @@ export declare class AdminService {
             updated_at: Date;
             status: import(".prisma/client").$Enums.OrderItemStatus;
             menu_item_id: string;
-            quantity: number;
-            special_instructions: string | null;
             order_id: string;
             item_name: string;
+            quantity: number;
             unit_price: number;
             modifier_price: number;
             total_price: number;
+            special_instructions: string | null;
             estimated_prep_time: number;
             accepted_at: Date | null;
             preparing_at: Date | null;
@@ -165,36 +165,36 @@ export declare class AdminService {
         created_at: Date;
         updated_at: Date;
         status: import(".prisma/client").$Enums.OrderStatus;
-        table_id: string;
+        table_id: string | null;
         waiter_id: string | null;
-        session_id: string | null;
         idempotency_key: string;
-        special_notes: string | null;
         token_number: number;
         token_date: string;
+        session_id: string | null;
         payment_method: string;
         payment_status: string;
         subtotal: number;
         tax_amount: number;
         total: number;
+        special_notes: string | null;
     }>;
     updateOrderStatus(actor: JwtUser, id: string, dto: UpdateOrderStatusDto): Promise<{
         id: string;
         created_at: Date;
         updated_at: Date;
         status: import(".prisma/client").$Enums.OrderStatus;
-        table_id: string;
+        table_id: string | null;
         waiter_id: string | null;
-        session_id: string | null;
         idempotency_key: string;
-        special_notes: string | null;
         token_number: number;
         token_date: string;
+        session_id: string | null;
         payment_method: string;
         payment_status: string;
         subtotal: number;
         tax_amount: number;
         total: number;
+        special_notes: string | null;
     }>;
     cancelOrder(actor: JwtUser, id: string, dto: CancelOrderDto): Promise<{
         id: string;

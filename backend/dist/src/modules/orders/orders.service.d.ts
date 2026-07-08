@@ -6,7 +6,7 @@ export declare class OrdersService {
     create(dto: CreateOrderDto): Promise<{
         id: string;
         token_number: number;
-        table_id: string;
+        table_id: string | null;
         session_id: string | null;
         status: import(".prisma/client").$Enums.OrderStatus;
         payment_method: string;
@@ -43,7 +43,7 @@ export declare class OrdersService {
     findOne(orderId: string): Promise<{
         id: string;
         token_number: number;
-        table_id: string;
+        table_id: string | null;
         session_id: string | null;
         status: import(".prisma/client").$Enums.OrderStatus;
         payment_method: string;
@@ -99,7 +99,7 @@ export declare class OrdersService {
     cancel(orderId: string, reason?: string): Promise<{
         id: string;
         token_number: number;
-        table_id: string;
+        table_id: string | null;
         session_id: string | null;
         status: import(".prisma/client").$Enums.OrderStatus;
         payment_method: string;

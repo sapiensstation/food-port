@@ -225,7 +225,7 @@ let AdminService = class AdminService {
             order_item_id: i.id,
             order_id: i.order_id,
             token_number: i.order.token_number,
-            table_number: String(i.order.table.table_number),
+            table_number: i.order.table ? String(i.order.table.table_number) : null,
             vendor_name: i.vendor.name,
             booth_color: i.vendor.booth_color,
             item_name: i.item_name,
@@ -266,7 +266,7 @@ let AdminService = class AdminService {
             orders: orders.map((o) => ({
                 id: o.id,
                 token_number: o.token_number,
-                table_number: o.table.table_number,
+                table_number: o.table?.table_number ?? null,
                 status: o.status,
                 subtotal: o.subtotal,
                 tax: o.tax_amount,
@@ -324,7 +324,7 @@ let AdminService = class AdminService {
     async exportOrders(from, to, status) {
         const { orders } = await this.getOrders(from, to, status, undefined, 1, 10000);
         const header = 'token,table,status,subtotal,tax,total,items,created_at\n';
-        const rows = orders.map((o) => `${o.token_number},${o.table_number},${o.status},${o.subtotal.toFixed(2)},${(o.tax ?? 0).toFixed(2)},${o.total.toFixed(2)},${o.item_count},"${o.created_at}"`);
+        const rows = orders.map((o) => `${o.token_number},${o.table_number ?? ''},${o.status},${o.subtotal.toFixed(2)},${(o.tax ?? 0).toFixed(2)},${o.total.toFixed(2)},${o.item_count},"${o.created_at}"`);
         return header + rows.join('\n');
     }
     async getVendors(status, page = 1, limit = 20) {

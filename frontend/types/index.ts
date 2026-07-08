@@ -118,8 +118,8 @@ export interface KDSOrder {
 
 export interface Session {
   id: string;
-  table_id: string;
-  table_number: string;
+  table_id: string | null;
+  table_number: string | null;
 }
 
 export interface Toast {
@@ -163,7 +163,7 @@ export interface AdminVendor {
 export interface AdminOrder {
   id: string;
   token_number: number;
-  table_number: number;
+  table_number: number | null;
   status: OrderStatus;
   subtotal: number;
   tax: number;

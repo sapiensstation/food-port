@@ -11,7 +11,7 @@ export declare class CartItemDto {
 }
 export declare class CreateOrderDto {
     session_id: string;
-    table_id: string;
+    table_id?: string;
     waiter_id?: string;
     idempotency_key: string;
     items: CartItemDto[];

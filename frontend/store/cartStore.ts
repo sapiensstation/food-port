@@ -15,7 +15,7 @@ interface CartStore {
   updateQuantity: (itemKey: string, quantity: number) => void;
   removeItem: (itemKey: string) => void;
   clearCart: () => void;
-  setSession: (sessionId: string, tableId: string, tableNumber: string) => void;
+  setSession: (sessionId: string, tableId: string | null, tableNumber: string | null) => void;
 
   itemCount: () => number;
   subtotal: () => number;

@@ -27,16 +27,20 @@ export class OrdersService {
     });
     if (existing) return this.formatOrder(existing);
 
-    // Validate table (accept UUID or table_number string)
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(dto.table_id);
-    const tableNumber = isUuid ? NaN : parseInt(dto.table_id, 10);
-    if (!isUuid && isNaN(tableNumber)) throw new NotFoundException('Table not found');
-    const table = await this.prisma.table.findFirst({
-      where: isUuid
-        ? { id: dto.table_id, is_active: true }
-        : { table_number: tableNumber, is_active: true },
-    });
-    if (!table) throw new NotFoundException('Table not found');
+    // Table is optional — orders are identified by token, not table
+    let tableId: string | null = null;
+    if (dto.table_id) {
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(dto.table_id);
+      const tableNumber = isUuid ? NaN : parseInt(dto.table_id, 10);
+      if (!isUuid && isNaN(tableNumber)) throw new NotFoundException('Table not found');
+      const table = await this.prisma.table.findFirst({
+        where: isUuid
+          ? { id: dto.table_id, is_active: true }
+          : { table_number: tableNumber, is_active: true },
+      });
+      if (!table) throw new NotFoundException('Table not found');
+      tableId = table.id;
+    }
 
     // Validate & price all cart items
     const priced = await this.priceCartItems(dto.items);
@@ -53,7 +57,7 @@ export class OrdersService {
       data: {
         token_number: tokenNumber,
         token_date: tokenDate,
-        table_id: table.id,
+        table_id: tableId,
         session_id: dto.session_id,
         waiter_id: dto.waiter_id ?? null,
         idempotency_key: dto.idempotency_key,
@@ -277,7 +281,7 @@ export class OrdersService {
   }
 
   private formatOrder(order: {
-    id: string; token_number: number; table_id: string; session_id: string | null;
+    id: string; token_number: number; table_id: string | null; session_id: string | null;
     status: OrderStatus; payment_method: string; payment_status: string;
     subtotal: number; tax_amount: number; total: number;
     created_at: Date; updated_at: Date;

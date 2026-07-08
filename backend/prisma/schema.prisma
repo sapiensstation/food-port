@@ -143,14 +143,14 @@ model Table {
 
 model Session {
   id         String        @id @default(uuid())
-  table_id   String
+  table_id   String?
   waiter_id  String?
   status     SessionStatus @default(active)
   expires_at DateTime
   created_at DateTime      @default(now())
   updated_at DateTime      @updatedAt
 
-  table  Table   @relation(fields: [table_id], references: [id])
+  table  Table?  @relation(fields: [table_id], references: [id])
   waiter User?   @relation(fields: [waiter_id], references: [id])
   orders Order[]
 
@@ -253,7 +253,7 @@ model Order {
   id              String      @id @default(uuid())
   token_number    Int
   token_date      String
-  table_id        String
+  table_id        String?
   session_id      String?
   waiter_id       String?
   status          OrderStatus @default(pending)
@@ -267,7 +267,7 @@ model Order {
   created_at      DateTime    @default(now())
   updated_at      DateTime    @updatedAt
 
-  table      Table    @relation(fields: [table_id], references: [id])
+  table      Table?   @relation(fields: [table_id], references: [id])
   session    Session? @relation(fields: [session_id], references: [id])
   items      OrderItem[]
   history    OrderStatusHistory[]

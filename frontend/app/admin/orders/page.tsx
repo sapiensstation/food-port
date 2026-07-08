@@ -165,7 +165,7 @@ export default function AdminOrdersPage() {
                     <td className="px-5 py-3 font-heading text-2xl text-brand-orange">
                       #{String(order.token_number).padStart(3, '0')}
                     </td>
-                    <td className="px-4 py-3 text-brand-chrome">T{order.table_number}</td>
+                    <td className="px-4 py-3 text-brand-chrome">{order.table_number ? `T${order.table_number}` : '—'}</td>
                     <td className="px-4 py-3 text-brand-dim">{order.item_count} item{order.item_count !== 1 ? 's' : ''}</td>
                     <td className="px-4 py-3 font-mono text-brand-yellow">${order.total.toFixed(2)}</td>
                     <td className="px-4 py-3">
@@ -227,7 +227,7 @@ export default function AdminOrdersPage() {
                 {/* Summary */}
                 <div className="grid grid-cols-3 gap-3">
                   {[
-                    { label: 'Table', value: `T${selected.table_number}` },
+                    { label: 'Table', value: selected.table_number ? `T${selected.table_number}` : '—' },
                     { label: 'Status', value: selected.status.replace('_', ' '), color: STATUS_COLOR[selected.status] },
                     { label: 'Total', value: `$${selected.total.toFixed(2)}`, color: '#F59E0B' },
                   ].map((s) => (

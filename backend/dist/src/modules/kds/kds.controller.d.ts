@@ -10,7 +10,7 @@ export declare class KdsController {
             order_item_id: string;
             order_id: string;
             token_number: number;
-            table_number: number;
+            table_number: number | null;
             item_name: string;
             quantity: number;
             modifiers: {
@@ -29,7 +29,7 @@ export declare class KdsController {
             order_item_id: string;
             order_id: string;
             token_number: number;
-            table_number: number;
+            table_number: number | null;
             item_name: string;
             quantity: number;
             modifiers: {
@@ -48,7 +48,7 @@ export declare class KdsController {
             order_item_id: string;
             order_id: string;
             token_number: number;
-            table_number: number;
+            table_number: number | null;
             item_name: string;
             quantity: number;
             modifiers: {
@@ -68,7 +68,7 @@ export declare class KdsController {
         order_item_id: string;
         order_id: string;
         token_number: number;
-        table_number: number;
+        table_number: number | null;
         item_name: string;
         quantity: number;
         modifiers: {
@@ -87,7 +87,7 @@ export declare class KdsController {
         order_item_id: string;
         order_id: string;
         token_number: number;
-        table_number: number;
+        table_number: number | null;
         item_name: string;
         quantity: number;
         modifiers: {
@@ -106,7 +106,7 @@ export declare class KdsController {
         order_item_id: string;
         order_id: string;
         token_number: number;
-        table_number: number;
+        table_number: number | null;
         item_name: string;
         quantity: number;
         modifiers: {
@@ -125,7 +125,7 @@ export declare class KdsController {
         order_item_id: string;
         order_id: string;
         token_number: number;
-        table_number: number;
+        table_number: number | null;
         item_name: string;
         quantity: number;
         modifiers: {
@@ -144,7 +144,7 @@ export declare class KdsController {
         order_item_id: string;
         order_id: string;
         token_number: number;
-        table_number: number;
+        table_number: number | null;
         item_name: string;
         quantity: number;
         modifiers: {

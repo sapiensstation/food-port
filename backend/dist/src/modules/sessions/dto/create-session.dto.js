@@ -15,6 +15,7 @@ class CreateSessionDto {
 }
 exports.CreateSessionDto = CreateSessionDto;
 __decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateSessionDto.prototype, "table_id", void 0);

@@ -34,7 +34,7 @@ export declare class VendorController {
         data: {
             id: string;
             token_number: number;
-            table_number: number;
+            table_number: number | null;
             item_count: number;
             total: number;
             status: import(".prisma/client").$Enums.OrderStatus;
@@ -52,7 +52,7 @@ export declare class VendorController {
     getOrder(user: JwtUser, orderId: string): Promise<{
         id: string;
         token_number: number;
-        table_number: number;
+        table_number: number | null;
         status: import(".prisma/client").$Enums.OrderStatus;
         created_at: string;
         special_notes: string | null;

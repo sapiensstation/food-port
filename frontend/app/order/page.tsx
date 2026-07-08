@@ -13,7 +13,7 @@ function WelcomeContent() {
   const setSession = useCartStore((s) => s.setSession);
   const [loading, setLoading] = useState(false);
 
-  const tableId = searchParams.get('table') ?? '1';
+  const tableId = searchParams.get('table');
   const autoStart = searchParams.get('autostart') === '1';
 
   useEffect(() => {
@@ -24,11 +24,11 @@ function WelcomeContent() {
   async function handleStart() {
     setLoading(true);
     try {
-      const res = await apiPost<{ id: string; table_number: number }>(
+      const res = await apiPost<{ id: string; table_number: number | null }>(
         '/sessions',
-        { table_id: tableId },
+        tableId ? { table_id: tableId } : {},
       );
-      setSession(res.id, tableId, String(res.table_number));
+      setSession(res.id, tableId, res.table_number != null ? String(res.table_number) : null);
     } catch {
       /* continue without session */
     } finally {
@@ -107,7 +107,7 @@ function WelcomeContent() {
           transition={{ delay: 0.65, duration: 0.4 }}
           className="mt-6 text-xs text-brand-dim font-mono"
         >
-          {searchParams.get('table') ? (
+          {tableId ? (
             <span className="text-brand-orange font-semibold">Table {tableId}</span>
           ) : (
             'Walk-up order'

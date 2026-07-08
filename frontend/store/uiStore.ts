@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Toast } from '@/types';
 
-export type FontChoice = 'poppins' | 'inter' | 'manrope';
+export type FontChoice = 'poppins' | 'inter';
 
 interface UIStore {
   toasts: Toast[];

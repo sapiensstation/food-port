@@ -48,6 +48,12 @@ const VENDORS = [
     { name: "Dessert Den", slug: "dessert-den", cuisine: "Desserts", color: "#9B5DE5", booth: 9 },
     { name: "BBQ Boss", slug: "bbq-boss", cuisine: "BBQ", color: "#CB4335", booth: 10 },
     { name: "Food Port", slug: "food-port", cuisine: "Multi-Cuisine", color: "#FF6B35", booth: 11 },
+    { name: "Milkshake & Cold Coffee Booth", slug: "milkshake-cold-coffee", cuisine: "Drinks", color: "#C9184A", booth: 12 },
+    { name: "Waffle Booth", slug: "waffle-booth", cuisine: "Desserts", color: "#D4A373", booth: 13 },
+    { name: "Chinese & Wings Booth", slug: "chinese-wings", cuisine: "Chinese", color: "#A4161A", booth: 14 },
+    { name: "Roll Ice Cream Booth", slug: "roll-ice-cream", cuisine: "Desserts", color: "#06A77D", booth: 15 },
+    { name: "Fuchka & Street Food Booth", slug: "fuchka-street-food", cuisine: "Street Food", color: "#BB3E03", booth: 16 },
+    { name: "Cake & Dessert Booth", slug: "cake-dessert", cuisine: "Desserts", color: "#F72585", booth: 17 },
 ];
 const MENU_TEMPLATES = {
     "burger-barn": {
@@ -331,6 +337,102 @@ const MENU_TEMPLATES = {
                 ] },
         ],
     },
+    "milkshake-cold-coffee": {
+        categories: [
+            { name: "Milkshake", items: [
+                    { name: "Chocolate Milkshake", desc: "Rich chocolate ice cream blended thick", price: 160, tags: ["vegetarian"], prepTime: 5 },
+                    { name: "Banana Milkshake", desc: "Fresh banana blended with vanilla ice cream", price: 100, tags: ["vegetarian"], prepTime: 5 },
+                    { name: "Strawberry Milkshake", desc: "Fresh strawberry, vanilla ice cream", price: 150, tags: ["vegetarian"], prepTime: 5 },
+                    { name: "Milkshake (Oreo, etc.)", desc: "Oreo cookies blended with vanilla ice cream", price: 160, tags: ["vegetarian"], prepTime: 5 },
+                    { name: "Caramel Milkshake", desc: "Caramel syrup blended with vanilla ice cream", price: 200, tags: ["vegetarian"], prepTime: 5 },
+                ] },
+            { name: "Cold Coffee", items: [
+                    { name: "Chocolate Cold Coffee", desc: "Cold coffee blended with chocolate syrup", price: 160, tags: ["vegetarian"], prepTime: 5 },
+                    { name: "Extra Choco Cold Coffee", desc: "Double chocolate cold coffee, extra rich", price: 200, tags: ["vegetarian"], prepTime: 5 },
+                    { name: "Cold Coffee", desc: "Classic chilled blended coffee", price: 150, tags: ["vegetarian"], prepTime: 5 },
+                    { name: "Strawberry Cold Coffee", desc: "Cold coffee blended with strawberry syrup", price: 160, tags: ["vegetarian"], prepTime: 5 },
+                ] },
+        ],
+    },
+    "waffle-booth": {
+        categories: [
+            { name: "Waffles", items: [
+                    { name: "Nutella Regular", desc: "Warm waffle topped with Nutella", price: 150, tags: ["vegetarian"], prepTime: 8 },
+                    { name: "Nutella Extreme", desc: "Loaded Nutella waffle with extra drizzle", price: 170, tags: ["vegetarian"], prepTime: 8 },
+                    { name: "Nutty Nutella", desc: "Nutella waffle topped with mixed nuts", price: 170, tags: ["vegetarian"], prepTime: 8 },
+                    { name: "Nutella & Strawberry", desc: "Nutella waffle with fresh strawberry slices", price: 180, tags: ["vegetarian"], prepTime: 8 },
+                    { name: "Ice-Cream Nutella", desc: "Nutella waffle topped with a scoop of ice cream", price: 200, tags: ["vegetarian"], prepTime: 9 },
+                    { name: "Nutshell Banana", desc: "Waffle with banana and hazelnut spread", price: 180, tags: ["vegetarian"], prepTime: 8 },
+                    { name: "Whippy Nutella", desc: "Nutella waffle topped with whipped cream", price: 180, tags: ["vegetarian"], prepTime: 8 },
+                    { name: "Red Velvet", desc: "Red velvet flavored waffle with cream cheese drizzle", price: 160, tags: ["vegetarian"], prepTime: 8 },
+                    { name: "Doreo Secret", desc: "Waffle loaded with Oreo crumble and sauce", price: 190, tags: ["vegetarian"], prepTime: 8 },
+                    { name: "Mango Madness", desc: "Waffle topped with fresh mango and cream", price: 220, tags: ["vegetarian"], prepTime: 9 },
+                    { name: "Nutty Caramel", desc: "Waffle with caramel drizzle and mixed nuts", price: 220, tags: ["vegetarian"], prepTime: 9 },
+                ] },
+        ],
+    },
+    "chinese-wings": {
+        categories: [
+            { name: "Rice", items: [
+                    { name: "Fried Rice", desc: "Wok-tossed jasmine rice, egg, spring onion", price: 150, tags: ["vegetarian"], prepTime: 10 },
+                    { name: "Fried Rice & Mixed Vegetable", desc: "Fried rice served with stir-fried mixed vegetables", price: 260, tags: ["vegetarian"], prepTime: 12 },
+                ] },
+            { name: "Wings & Lollipop", items: [
+                    { name: "Chicken Wings (6 pcs)", desc: "Crispy fried chicken wings, house spice mix", price: 150, tags: [], prepTime: 12 },
+                    { name: "Chicken Lollipop (5 pcs)", desc: "French-cut drumettes, dry rub spice, dip", price: 120, tags: [], prepTime: 12 },
+                ] },
+        ],
+    },
+    "roll-ice-cream": {
+        categories: [
+            { name: "Roll Ice Cream", items: [
+                    { name: "Doreo Secret", desc: "Vanilla base rolled ice cream, Oreo crumble", price: 120, tags: ["vegetarian"], prepTime: 8 },
+                    { name: "Strawberry Sense", desc: "Strawberry rolled ice cream with fresh fruit", price: 140, tags: ["vegetarian"], prepTime: 8 },
+                    { name: "Strawberry Blust", desc: "Loaded strawberry rolled ice cream, extra toppings", price: 200, tags: ["vegetarian"], prepTime: 8 },
+                    { name: "Mango Madness", desc: "Fresh mango rolled ice cream, mango pieces", price: 180, tags: ["vegetarian"], prepTime: 8 },
+                    { name: "Dragon Brew", desc: "Dragon fruit rolled ice cream, colorful toppings", price: 190, tags: ["vegetarian"], prepTime: 8 },
+                    { name: "Nutella Nuts", desc: "Chocolate-hazelnut base, mixed nuts crunch", price: 220, tags: ["vegetarian"], prepTime: 8 },
+                    { name: "Dates & Nuts", desc: "Date-caramel rolled ice cream, mixed nuts", price: 240, tags: ["vegetarian"], prepTime: 8 },
+                    { name: "Banana Cream", desc: "Banana rolled ice cream, cream drizzle", price: 160, tags: ["vegetarian"], prepTime: 8 },
+                    { name: "Mixed Fruit", desc: "Rolled ice cream loaded with seasonal fruits", price: 250, tags: ["vegetarian"], prepTime: 9 },
+                ] },
+        ],
+    },
+    "fuchka-street-food": {
+        categories: [
+            { name: "Fuchka & Chatpati", items: [
+                    { name: "Doi Fuchka", desc: "Fuchka topped with sweetened yoghurt, tamarind", price: 120, tags: ["vegetarian"], prepTime: 5 },
+                    { name: "Full Egg Fuchka", desc: "Fuchka loaded with boiled egg and tamarind water", price: 80, tags: ["vegetarian"], prepTime: 5 },
+                    { name: "Full Egg Chatpati", desc: "Chatpati loaded with boiled egg", price: 80, tags: ["vegetarian"], prepTime: 5 },
+                    { name: "Classic Fuchka", desc: "Crispy puris filled with spiced potato, tamarind water", price: 60, tags: ["vegan"], prepTime: 5 },
+                    { name: "Velpuri", desc: "Puffed rice street snack, spiced and tangy", price: 50, tags: ["vegan"], prepTime: 3 },
+                    { name: "Classic Chatpati", desc: "Chickpeas, potato, tamarind sauce, green chilli", price: 60, tags: ["vegetarian"], prepTime: 5 },
+                    { name: "Panipuri", desc: "Crispy puris with tangy spiced water", price: 50, tags: ["vegan"], prepTime: 5 },
+                ] },
+        ],
+    },
+    "cake-dessert": {
+        categories: [
+            { name: "Cakes", items: [
+                    { name: "Cheese Vanilla Cake", desc: "Soft vanilla sponge with cream cheese frosting", price: 120, tags: ["vegetarian"], prepTime: 3 },
+                    { name: "Juicy Lemon Cake", desc: "Moist lemon sponge, citrus glaze", price: 110, tags: ["vegetarian"], prepTime: 3 },
+                    { name: "Red Velvet Cake", desc: "Classic red velvet, cream cheese frosting", price: 120, tags: ["vegetarian"], prepTime: 3 },
+                    { name: "Chocolate Mousse", desc: "Silky dark chocolate mousse", price: 130, tags: ["vegetarian"], prepTime: 3 },
+                    { name: "Butterscotch Cake", desc: "Butterscotch sponge, caramelized nuts", price: 120, tags: ["vegetarian"], prepTime: 3 },
+                    { name: "Regular Chocolate Pastry", desc: "Classic chocolate sponge pastry", price: 60, tags: ["vegetarian"], prepTime: 2 },
+                    { name: "Chocolate Coated Brownie", desc: "Fudgy brownie coated in chocolate", price: 100, tags: ["vegetarian"], prepTime: 3 },
+                ] },
+            { name: "Traditional Desserts", items: [
+                    { name: "Aflatoon", desc: "Traditional Bengali sweet, khoya and sugar syrup", price: 100, tags: ["vegetarian"], prepTime: 2 },
+                    { name: "Special Tasty Balushai", desc: "Flaky, syrup-soaked traditional sweet", price: 40, tags: ["vegetarian"], prepTime: 2 },
+                    { name: "Sweet Yogurt (Curd)", desc: "Traditional sweetened set yoghurt", price: 40, tags: ["vegetarian"], prepTime: 1 },
+                    { name: "Rice Pudding (Phirni)", desc: "Creamy rice pudding, cardamom and nuts", price: 40, tags: ["vegetarian"], prepTime: 2 },
+                    { name: "Tapioca Pearls (Sagodana)", desc: "Sweetened tapioca pearl pudding", price: 60, tags: ["vegetarian"], prepTime: 3 },
+                    { name: "Egg Milk Caramel", desc: "Classic baked egg custard, caramel top", price: 65, tags: ["vegetarian"], prepTime: 3 },
+                    { name: "Green Coconut Refreshing", desc: "Chilled green coconut water, served fresh", price: 40, tags: ["vegan", "gluten_free"], prepTime: 1 },
+                ] },
+        ],
+    },
 };
 async function main() {
     console.log('🌱 Seeding Food Village database...');
@@ -532,13 +634,13 @@ async function main() {
             },
         });
     }
-    console.log('✅ Vendor manager accounts seeded (booth1–10@foodvillage.com / vendor123)');
+    console.log('✅ Vendor manager accounts seeded (booth1–17@foodvillage.com / vendor123)');
     console.log('\n🎉 Seed complete!');
-    console.log('  • 11 vendors with menus (incl. Food Port with BDT pricing)');
+    console.log('  • 17 vendors with menus (incl. Food Port and 6 booth vendors with BDT pricing)');
     console.log('  • 20 tables');
     console.log('  • 1 food village config');
     console.log('  • Super admin: admin@foodvillage.com / admin123');
-    console.log('  • Vendor managers: booth1–10@foodvillage.com / vendor123');
+    console.log('  • Vendor managers: booth1–17@foodvillage.com / vendor123');
     console.log('  • Kitchen PIN (Burger Barn): 1234');
 }
 main()

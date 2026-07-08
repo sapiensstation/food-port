@@ -39,7 +39,7 @@ let KdsService = class KdsService {
             },
             orderBy: { created_at: 'asc' },
         });
-        const tableIds = [...new Set(items.map((i) => i.order.table_id))];
+        const tableIds = [...new Set(items.map((i) => i.order.table_id).filter((id) => !!id))];
         const tables = await this.prisma.table.findMany({
             where: { id: { in: tableIds } },
             select: { id: true, table_number: true },
@@ -91,10 +91,12 @@ let KdsService = class KdsService {
             },
         });
         await this.ordersService.syncOrderStatus(item.order_id);
-        const tables = await this.prisma.table.findMany({
-            where: { id: updated.order.table_id },
-            select: { id: true, table_number: true },
-        });
+        const tables = updated.order.table_id
+            ? await this.prisma.table.findMany({
+                where: { id: updated.order.table_id },
+                select: { id: true, table_number: true },
+            })
+            : [];
         const tableMap = Object.fromEntries(tables.map((t) => [t.id, t.table_number]));
         const card = this.formatCard(updated, tableMap);
         this.kdsGateway?.emitOrderUpdate(updated.vendor_id, card);
@@ -133,7 +135,7 @@ let KdsService = class KdsService {
             order_item_id: item.id,
             order_id: item.order_id,
             token_number: item.order.token_number,
-            table_number: tableMap[item.order.table_id] ?? 0,
+            table_number: item.order.table_id ? tableMap[item.order.table_id] ?? null : null,
             item_name: item.item_name,
             quantity: item.quantity,
             modifiers: item.modifiers.map((m) => ({

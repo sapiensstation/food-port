@@ -31,8 +31,8 @@ export class KdsService {
       orderBy: { created_at: 'asc' },
     });
 
-    // Get table numbers
-    const tableIds = [...new Set(items.map((i) => i.order.table_id))];
+    // Get table numbers (orders may have no table — token-only pickup)
+    const tableIds = [...new Set(items.map((i) => i.order.table_id).filter((id): id is string => !!id))];
     const tables = await this.prisma.table.findMany({
       where: { id: { in: tableIds } },
       select: { id: true, table_number: true },
@@ -87,10 +87,12 @@ export class KdsService {
     // Sync parent order aggregate status
     await this.ordersService.syncOrderStatus(item.order_id);
 
-    const tables = await this.prisma.table.findMany({
-      where: { id: updated.order.table_id },
-      select: { id: true, table_number: true },
-    });
+    const tables = updated.order.table_id
+      ? await this.prisma.table.findMany({
+          where: { id: updated.order.table_id },
+          select: { id: true, table_number: true },
+        })
+      : [];
     const tableMap = Object.fromEntries(tables.map((t) => [t.id, t.table_number]));
 
     const card = this.formatCard(updated, tableMap);
@@ -135,7 +137,7 @@ export class KdsService {
       id: string; order_id: string; item_name: string; quantity: number;
       status: OrderItemStatus; estimated_prep_time: number; special_instructions: string | null;
       created_at: Date; accepted_at: Date | null; preparing_at: Date | null;
-      order: { token_number: number; table_id: string };
+      order: { token_number: number; table_id: string | null };
       vendor: { booth_color: string };
       modifiers: Array<{ modifier_name: string; price_at_order: number }>;
     },
@@ -145,7 +147,7 @@ export class KdsService {
       order_item_id: item.id,
       order_id: item.order_id,
       token_number: item.order.token_number,
-      table_number: tableMap[item.order.table_id] ?? 0,
+      table_number: item.order.table_id ? tableMap[item.order.table_id] ?? null : null,
       item_name: item.item_name,
       quantity: item.quantity,
       modifiers: item.modifiers.map((m) => ({

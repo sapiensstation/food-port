@@ -93,13 +93,12 @@ export default function AdminVendorsPage() {
 
       {/* Vendor grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {vendors.map((vendor, i) => (
+        {vendors.map((vendor) => (
           <VendorCard
             key={vendor.id}
-            variant={i % 2 === 0 ? 'photo' : 'white'}
             name={vendor.name}
             cuisine={vendor.cuisine_type}
-            boothNumber={vendor.booth_number}
+            boothColor={vendor.booth_color}
             isOpen={vendor.status === 'online'}
             footer={
               <div className="pt-4 border-t border-brand-border">

@@ -85,23 +85,22 @@ export default function VendorBrowsingPage() {
         </h2>
 
         {/* Grid */}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <div className="mt-10 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((vendor, i) => (
             <motion.div
               key={vendor.id}
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04, duration: 0.3 }}
+              className="h-full"
             >
               <VendorCard
-                variant={i % 2 === 0 ? 'photo' : 'white'}
                 name={vendor.name}
                 cuisine={vendor.cuisine_type}
-                prepTimeMinutes={vendor.avg_prep_time_minutes}
-                boothNumber={vendor.booth_number}
                 isOpen={vendor.is_accepting_orders}
-                orderLabel="Order now"
-                onOrder={() => router.push(`/order/vendors/${vendor.id}/menu`)}
+                boothColor={vendor.booth_color}
+                onClick={() => router.push(`/order/vendors/${vendor.id}/menu`)}
+                className="w-full"
               />
             </motion.div>
           ))}
