@@ -7,8 +7,16 @@ const app_module_1 = require("./app.module");
 async function bootstrap() {
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
     app.setGlobalPrefix('api');
+    const allowedOrigin = process.env.FRONTEND_URL ?? 'http://localhost:3000';
     app.enableCors({
-        origin: process.env.FRONTEND_URL ?? 'http://localhost:3000',
+        origin: (origin, callback) => {
+            if (!origin || origin === allowedOrigin || /\.vercel\.app$/.test(new URL(origin).hostname)) {
+                callback(null, true);
+            }
+            else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
         credentials: true,
     });
     app.useGlobalPipes(new common_1.ValidationPipe({

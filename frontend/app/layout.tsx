@@ -32,9 +32,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://sapiensstation.com/"
           target="_blank"
           rel="noopener noreferrer"
-          className="fixed bottom-2 right-2 z-[60] text-[10px] text-brand-dim/50 hover:text-brand-dim transition-colors"
+          className="fixed bottom-3 right-3 z-[60] flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-lg hover:scale-105 active:scale-95 transition-transform"
+          style={{
+            background: 'linear-gradient(135deg, #FF5F6D, #FFC371, #58D0A2, #5D8BEA)',
+            backgroundSize: '300% 300%',
+            animation: 'credit-gradient 6s ease infinite',
+          }}
         >
-          made with ♥ by Sapiens Station
+          made with <span className="text-sm">♥</span> by Sapiens Station
         </a>
         <Script id="sw-register" strategy="afterInteractive">
           {`if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/sw.js').catch(() => {}); }`}
