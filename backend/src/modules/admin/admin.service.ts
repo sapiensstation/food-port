@@ -1,4 +1,6 @@
 import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { PrismaService } from '../../database/prisma.service';
 import { JwtUser } from '../../common/decorators/current-user.decorator';
 import {
@@ -10,7 +12,39 @@ import {
 
 @Injectable()
 export class AdminService {
-  constructor(private prisma: PrismaService) {}
+  private supabase: SupabaseClient;
+
+  constructor(private prisma: PrismaService, private config: ConfigService) {
+    this.supabase = createClient(
+      config.get<string>('supabase.url') ?? '',
+      config.get<string>('supabase.serviceRoleKey') ?? '',
+    );
+  }
+
+  private isLocalDev(): boolean {
+    const url = this.config.get<string>('supabase.url') ?? '';
+    return url.includes('localhost') || url.includes('127.0.0.1');
+  }
+
+  /**
+   * Creates a real Supabase Auth account so the user can actually log in.
+   * Falls back to a placeholder id only against a local Supabase instance,
+   * where auth.service.ts's localLogin bypasses Supabase Auth entirely.
+   */
+  private async provisionSupabaseAuthUser(email: string, password: string, prefix: string): Promise<string> {
+    if (this.isLocalDev()) {
+      return `${prefix}-${Date.now()}`;
+    }
+    const { data, error } = await this.supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+    });
+    if (error || !data.user) {
+      throw new BadRequestException(`Failed to create auth account: ${error?.message ?? 'unknown error'}`);
+    }
+    return data.user.id;
+  }
 
   // ─── Overview ────────────────────────────────────────────────────────────────
 
@@ -652,9 +686,10 @@ export class AdminService {
 
     const bcrypt = await import('bcrypt');
     const password_hash = await bcrypt.hash(dto.password, 10);
+    const supabase_id = await this.provisionSupabaseAuthUser(dto.email, dto.password, 'admin-created');
 
     const user = await this.prisma.user.create({
-      data: { full_name: dto.full_name, email: dto.email, password_hash, role: dto.role as never, vendor_id: dto.vendor_id ?? null, is_active: true, supabase_id: `admin-created-${Date.now()}` },
+      data: { full_name: dto.full_name, email: dto.email, password_hash, role: dto.role as never, vendor_id: dto.vendor_id ?? null, is_active: true, supabase_id },
       select: { id: true, full_name: true, email: true, role: true, is_active: true, created_at: true },
     });
     await this.logAudit(actor, 'user.create', 'user', user.id, { email: user.email, role: user.role });
@@ -682,10 +717,12 @@ export class AdminService {
     if (exists) throw new ConflictException('Email already in use');
 
     const bcrypt = await import('bcrypt');
-    const password_hash = await bcrypt.hash(dto.pin ?? 'changeme123', 10);
+    const password = dto.pin ?? 'changeme123';
+    const password_hash = await bcrypt.hash(password, 10);
+    const supabase_id = await this.provisionSupabaseAuthUser(dto.email, password, 'staff-created');
 
     const user = await this.prisma.user.create({
-      data: { full_name: dto.name, email: dto.email, password_hash, role: dto.role as never, vendor_id: vendorId, is_active: true, supabase_id: `staff-created-${Date.now()}` },
+      data: { full_name: dto.name, email: dto.email, password_hash, role: dto.role as never, vendor_id: vendorId, is_active: true, supabase_id },
       select: { id: true, full_name: true, email: true, role: true, is_active: true },
     });
     await this.logAudit(actor, 'staff.create', 'user', user.id, { vendor_id: vendorId, role: dto.role });

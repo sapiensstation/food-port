@@ -44,10 +44,32 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminService = void 0;
 const common_1 = require("@nestjs/common");
+const config_1 = require("@nestjs/config");
+const supabase_js_1 = require("@supabase/supabase-js");
 const prisma_service_1 = require("../../database/prisma.service");
 let AdminService = class AdminService {
-    constructor(prisma) {
+    constructor(prisma, config) {
         this.prisma = prisma;
+        this.config = config;
+        this.supabase = (0, supabase_js_1.createClient)(config.get('supabase.url') ?? '', config.get('supabase.serviceRoleKey') ?? '');
+    }
+    isLocalDev() {
+        const url = this.config.get('supabase.url') ?? '';
+        return url.includes('localhost') || url.includes('127.0.0.1');
+    }
+    async provisionSupabaseAuthUser(email, password, prefix) {
+        if (this.isLocalDev()) {
+            return `${prefix}-${Date.now()}`;
+        }
+        const { data, error } = await this.supabase.auth.admin.createUser({
+            email,
+            password,
+            email_confirm: true,
+        });
+        if (error || !data.user) {
+            throw new common_1.BadRequestException(`Failed to create auth account: ${error?.message ?? 'unknown error'}`);
+        }
+        return data.user.id;
     }
     async getOverview() {
         const today = new Date();
@@ -617,8 +639,9 @@ let AdminService = class AdminService {
             throw new common_1.ConflictException('Email already in use');
         const bcrypt = await Promise.resolve().then(() => __importStar(require('bcrypt')));
         const password_hash = await bcrypt.hash(dto.password, 10);
+        const supabase_id = await this.provisionSupabaseAuthUser(dto.email, dto.password, 'admin-created');
         const user = await this.prisma.user.create({
-            data: { full_name: dto.full_name, email: dto.email, password_hash, role: dto.role, vendor_id: dto.vendor_id ?? null, is_active: true, supabase_id: `admin-created-${Date.now()}` },
+            data: { full_name: dto.full_name, email: dto.email, password_hash, role: dto.role, vendor_id: dto.vendor_id ?? null, is_active: true, supabase_id },
             select: { id: true, full_name: true, email: true, role: true, is_active: true, created_at: true },
         });
         await this.logAudit(actor, 'user.create', 'user', user.id, { email: user.email, role: user.role });
@@ -644,9 +667,11 @@ let AdminService = class AdminService {
         if (exists)
             throw new common_1.ConflictException('Email already in use');
         const bcrypt = await Promise.resolve().then(() => __importStar(require('bcrypt')));
-        const password_hash = await bcrypt.hash(dto.pin ?? 'changeme123', 10);
+        const password = dto.pin ?? 'changeme123';
+        const password_hash = await bcrypt.hash(password, 10);
+        const supabase_id = await this.provisionSupabaseAuthUser(dto.email, password, 'staff-created');
         const user = await this.prisma.user.create({
-            data: { full_name: dto.name, email: dto.email, password_hash, role: dto.role, vendor_id: vendorId, is_active: true, supabase_id: `staff-created-${Date.now()}` },
+            data: { full_name: dto.name, email: dto.email, password_hash, role: dto.role, vendor_id: vendorId, is_active: true, supabase_id },
             select: { id: true, full_name: true, email: true, role: true, is_active: true },
         });
         await this.logAudit(actor, 'staff.create', 'user', user.id, { vendor_id: vendorId, role: dto.role });
@@ -731,6 +756,6 @@ let AdminService = class AdminService {
 exports.AdminService = AdminService;
 exports.AdminService = AdminService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService, config_1.ConfigService])
 ], AdminService);
 //# sourceMappingURL=admin.service.js.map

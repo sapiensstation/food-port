@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api';
 import { useUIStore, type FontChoice } from '@/store/uiStore';
+import { useAdminAuthStore } from '@/store/adminAuthStore';
 import GlassCard from '@/components/ui/GlassCard';
 import Button from '@/components/ui/Button';
 import Spinner from '@/components/ui/Spinner';
@@ -23,6 +24,7 @@ export default function AdminSettingsPage() {
   const addToast = useUIStore((s) => s.addToast);
   const font = useUIStore((s) => s.font);
   const setFont = useUIStore((s) => s.setFont);
+  const canEdit = useAdminAuthStore((s) => s.user?.role) === 'super_admin';
 
   useEffect(() => {
     apiFetch<SystemSettings>('/admin/settings')
@@ -71,9 +73,9 @@ export default function AdminSettingsPage() {
         ].map(({ label, key, type, placeholder }) => (
           <div key={key}>
             <label className="block text-xs font-semibold text-brand-chrome mb-1.5 uppercase tracking-wider">{label}</label>
-            <input type={type} value={form[key as keyof typeof form]} placeholder={placeholder}
+            <input type={type} value={form[key as keyof typeof form]} placeholder={placeholder} disabled={!canEdit}
               onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-              className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60" />
+              className="w-full bg-brand-bg border border-brand-border rounded-xl px-4 py-2.5 text-sm text-brand-white focus:outline-none focus:border-brand-orange/60 disabled:opacity-50 disabled:cursor-not-allowed" />
           </div>
         ))}
 
@@ -85,7 +87,10 @@ export default function AdminSettingsPage() {
           </div>
         )}
 
-        <Button onClick={handleSave} loading={saving} size="lg" className="w-full font-heading tracking-widest">
+        {!canEdit && (
+          <p className="text-xs text-brand-dim">Only super admins can edit food village settings.</p>
+        )}
+        <Button onClick={handleSave} loading={saving} disabled={!canEdit} size="lg" className="w-full font-heading tracking-widest">
           SAVE SETTINGS
         </Button>
       </GlassCard>

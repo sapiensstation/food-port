@@ -8,19 +8,52 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JwtStrategy = void 0;
 const common_1 = require("@nestjs/common");
 const passport_1 = require("@nestjs/passport");
 const passport_jwt_1 = require("passport-jwt");
 const config_1 = require("@nestjs/config");
+const jwks_rsa_1 = __importDefault(require("jwks-rsa"));
+const jsonwebtoken_1 = require("jsonwebtoken");
 const prisma_service_1 = require("../../database/prisma.service");
+function jwtDecodeHeader(token) {
+    const decoded = (0, jsonwebtoken_1.decode)(token, { complete: true });
+    return decoded?.header ?? null;
+}
 let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(passport_jwt_1.Strategy) {
     constructor(config, prisma) {
+        const localSecret = config.get('supabase.jwtSecret') ?? '';
+        const supabaseUrl = config.get('supabase.url') ?? '';
+        const jwksClient = supabaseUrl
+            ? (0, jwks_rsa_1.default)({
+                jwksUri: `${supabaseUrl}/auth/v1/.well-known/jwks.json`,
+                cache: true,
+                cacheMaxAge: 10 * 60 * 1000,
+                rateLimit: true,
+            })
+            : null;
         super({
             jwtFromRequest: passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
-            secretOrKey: config.get('supabase.jwtSecret') ?? '',
+            algorithms: ['HS256', 'ES256', 'RS256'],
+            secretOrKeyProvider: (_request, rawJwtToken, done) => {
+                const decoded = jwtDecodeHeader(rawJwtToken);
+                if (!decoded?.kid) {
+                    return done(null, localSecret);
+                }
+                if (!jwksClient) {
+                    return done(new Error('Supabase URL not configured'), undefined);
+                }
+                jwksClient.getSigningKey(decoded.kid, (err, key) => {
+                    if (err)
+                        return done(err, undefined);
+                    done(null, key?.getPublicKey());
+                });
+            },
         });
         this.config = config;
         this.prisma = prisma;

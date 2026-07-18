@@ -2,6 +2,8 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
+import jwksRsa from 'jwks-rsa';
+import { decode as jwtDecode } from 'jsonwebtoken';
 import { PrismaService } from '../../database/prisma.service';
 
 interface SupabaseJwtPayload {
@@ -11,16 +13,49 @@ interface SupabaseJwtPayload {
   aud: string;
 }
 
+function jwtDecodeHeader(token: string): { kid?: string; alg?: string } | null {
+  const decoded = jwtDecode(token, { complete: true });
+  return decoded?.header ?? null;
+}
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private config: ConfigService,
     private prisma: PrismaService,
   ) {
+    const localSecret = config.get<string>('supabase.jwtSecret') ?? '';
+    const supabaseUrl = config.get<string>('supabase.url') ?? '';
+    const jwksClient = supabaseUrl
+      ? jwksRsa({
+          jwksUri: `${supabaseUrl}/auth/v1/.well-known/jwks.json`,
+          cache: true,
+          cacheMaxAge: 10 * 60 * 1000,
+          rateLimit: true,
+        })
+      : null;
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: config.get<string>('supabase.jwtSecret') ?? '',
+      algorithms: ['HS256', 'ES256', 'RS256'],
+      // Locally-issued tokens (PIN logins, local-dev login) are signed HS256 with our
+      // shared secret and carry no `kid`. Real Supabase-issued tokens are signed with
+      // the project's asymmetric key (ES256/RS256) and are verified against Supabase's
+      // JWKS endpoint instead — the legacy HS256 secret cannot verify those.
+      secretOrKeyProvider: (_request, rawJwtToken, done) => {
+        const decoded = jwtDecodeHeader(rawJwtToken);
+        if (!decoded?.kid) {
+          return done(null, localSecret);
+        }
+        if (!jwksClient) {
+          return done(new Error('Supabase URL not configured'), undefined);
+        }
+        jwksClient.getSigningKey(decoded.kid, (err, key) => {
+          if (err) return done(err, undefined);
+          done(null, key?.getPublicKey());
+        });
+      },
     });
   }
 

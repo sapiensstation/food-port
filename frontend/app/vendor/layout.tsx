@@ -7,15 +7,19 @@ import { useAuthStore } from '@/store/authStore';
 import { apiPatch } from '@/lib/api';
 import { useUIStore } from '@/store/uiStore';
 
+// Nav items are gated by role: vendor_owner runs the booth end-to-end and sees
+// everything; vendor_kitchen is prep-focused (Kitchen board + Orders only);
+// vendor_cashier handles payments/cash reconciliation (Orders, Operations, Payout)
+// but not menu editing, reports, or booth settings.
 const NAV_ITEMS = [
-  { href: '/vendor/kitchen', label: 'Kitchen', icon: '🍳' },
-  { href: '/vendor/dashboard', label: 'Dashboard', icon: '📊' },
-  { href: '/vendor/menu', label: 'Menu', icon: '📋' },
-  { href: '/vendor/orders', label: 'Orders', icon: '🧾' },
-  { href: '/vendor/reports', label: 'Reports', icon: '📈' },
-  { href: '/vendor/operations', label: 'Operations', icon: '🏢' },
-  { href: '/vendor/payout', label: 'Payout', icon: '💰' },
-  { href: '/vendor/settings', label: 'Settings', icon: '⚙️' },
+  { href: '/vendor/kitchen', label: 'Kitchen', icon: '🍳', roles: ['vendor_owner', 'vendor_kitchen'] },
+  { href: '/vendor/dashboard', label: 'Dashboard', icon: '📊', roles: ['vendor_owner'] },
+  { href: '/vendor/menu', label: 'Menu', icon: '📋', roles: ['vendor_owner'] },
+  { href: '/vendor/orders', label: 'Orders', icon: '🧾', roles: ['vendor_owner', 'vendor_kitchen', 'vendor_cashier'] },
+  { href: '/vendor/reports', label: 'Reports', icon: '📈', roles: ['vendor_owner'] },
+  { href: '/vendor/operations', label: 'Operations', icon: '🏢', roles: ['vendor_owner', 'vendor_cashier'] },
+  { href: '/vendor/payout', label: 'Payout', icon: '💰', roles: ['vendor_owner', 'vendor_cashier'] },
+  { href: '/vendor/settings', label: 'Settings', icon: '⚙️', roles: ['vendor_owner'] },
 ];
 
 export default function VendorLayout({ children }: { children: React.ReactNode }) {
@@ -24,11 +28,20 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
   const { user, isAuthenticated, logout } = useAuthStore();
   const addToast = useUIStore((s) => s.addToast);
 
+  const visibleItems = NAV_ITEMS.filter((item) => !user?.role || item.roles.includes(user.role));
+
   useEffect(() => {
     if (!isAuthenticated() && pathname !== '/vendor/login') {
       router.replace('/vendor/login');
+      return;
     }
-  }, [isAuthenticated, pathname, router]);
+    if (isAuthenticated() && user?.role) {
+      const allowed = NAV_ITEMS.find((item) => pathname.startsWith(item.href));
+      if (allowed && !allowed.roles.includes(user.role)) {
+        router.replace(visibleItems[0]?.href ?? '/vendor/orders');
+      }
+    }
+  }, [isAuthenticated, pathname, router, user?.role]);
 
   if (pathname === '/vendor/login') return <>{children}</>;
   if (!isAuthenticated()) return null;
@@ -55,7 +68,7 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
         </div>
 
         <nav className="flex-1 px-3 py-4 space-y-1">
-          {NAV_ITEMS.map((item) => {
+          {visibleItems.map((item) => {
             const active = pathname.startsWith(item.href);
             return (
               <Link key={item.href} href={item.href}>

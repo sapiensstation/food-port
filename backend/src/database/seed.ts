@@ -577,7 +577,7 @@ async function main() {
   }
 
   // Staff PIN for Burger Barn kitchen
-  const pinHash = await bcrypt.hash('1234', 10);
+  const pinHash = await bcrypt.hash('pin:1234', 10);
   const burgerVendor = await prisma.vendor.findUnique({ where: { slug: 'burger-barn' } });
   if (burgerVendor) {
     const existingPin = await prisma.staffPin.findFirst({ where: { vendor_id: burgerVendor.id, label: 'Kitchen Station 1' } });
